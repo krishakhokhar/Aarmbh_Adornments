@@ -1,0 +1,419 @@
+/* 🌌 Fullscreen Layout */
+.admin-login {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background-color: #6a786a;
+}
+
+/* 🎥 Video Wrapper */
+.video-wrapper {
+  flex: 1;
+  position: relative;
+  z-index: 0;
+}
+
+.video-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 🧊 Form Container on Top of Video */
+.admin-login-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.3); /* glass feel */
+}
+
+/* 🔰 Logo */
+.admin-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin: 20px;
+  border-radius: 50%;
+}
+
+/* 🧡 Welcome Text */
+.welcome-text h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: goldenrod;
+  font-family: "Aclonica", sans-serif;
+}
+.welcome-underline {
+  height: 4px;
+  width: 100%;
+  margin-top: 10px;
+  background: linear-gradient(90deg, transparent, goldenrod, transparent);
+  background-size: 200%;
+  animation: shimmer 2s linear infinite;
+  border-radius: 10px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -100%;
+  }
+  100% {
+    background-position: 200%;
+  }
+}
+
+/* 🟪 Login Glass Card */
+.admin-login-form {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.4);
+  color: white;
+  margin: 40px;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.admin-login-form h2 {
+  margin-bottom: 5px;
+  font-size: 1.5rem;
+  color: goldenrod;
+  font-family: "Aclonica", sans-serif;
+}
+
+.admin-login-form p {
+  font-size: 18px;
+  color: #ddd;
+  font-family: "Jost", sans-serif;
+}
+
+/* ✍️ Input Fields with Animation */
+.admin-login-form input {
+  width: 92%;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid white;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-size: 1rem;
+  background-color: transparent;
+  color: white;
+  outline: none;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.8s ease-in-out;
+}
+.admin-login-form input::placeholder {
+  color: white;
+}
+.admin-login-form input:focus {
+  background-color: transparent;
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(90deg, transparent, goldenrod, transparent);
+}
+@keyframes shimmer {
+  0% {
+    background-position: -100%;
+  }
+  100% {
+    background-position: 200%;
+  }
+}
+
+/* 👁️ Password Eye Icon */
+.password-wrapper {
+  position: relative;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 41%;
+  transform: translateY(-50%);
+  color: white;
+  cursor: pointer;
+}
+
+/* 🔘 Glowing Login Button */
+.admin-login-form button {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: goldenrod;
+  color: white;
+  border: none;
+  font-weight: 600;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 5px goldenrod;
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.admin-login-form button:hover {
+  background-color: goldenrod;
+  box-shadow: 0 0 15px 4px goldenrod;
+  transform: translateY(-2px);
+}
+
+/* Forgot Password */
+.forgot-link {
+  color: #ddd;
+  font-size: 0.9rem;
+  text-align: right;
+  margin-top: 10px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.forgot-link:hover {
+  color: #fff;
+}
+
+/* 🟢 OTP Box */
+.otp-section {
+  margin-top: 15px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.send-otp-btn {
+  background-color: goldenrod;
+  color: white;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.otp-sent-text {
+  font-size: 0.9rem;
+  color: #90ee90;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+/* 🌈 Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+/* 📱 Responsive Design */
+@media screen and (max-width: 768px) {
+  .admin-login {
+    flex-direction: column;
+  }
+
+  .video-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-wrapper video {
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  .admin-login-container {
+    flex: none;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+  }
+
+  .admin-login-form {
+    background: rgba(255, 255, 255, 0.15);
+    z-index: 2;
+  }
+
+  .welcome-text h1 {
+    font-size: 1.5rem;
+    padding: 0 10px 20px;
+    text-align: center;
+  }
+
+  .admin-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .admin-login-container {
+    padding: 1rem;
+  }
+}
+
+.otp-input {
+  width: 92%;
+  padding: 0.8rem;
+  margin-top: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+}
+
+.otp-input:focus {
+  background-color: #fef9f1;
+  box-shadow: 0 0 10px goldenrod;
+}
+
+.otp-timer {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #ffcc00;
+  font-weight: 600;
+}
+/* ✅ OTP Modal Styles */
+.otp-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.otp-modal-content {
+  background-color: #222;
+  color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0px 0px 15px 2px goldenrod;
+}
+
+.otp-modal-content input {
+  width: 90%;
+  padding: 1rem;
+  font-size: 1rem;
+  margin-top: 1rem;
+  border-radius: 8px;
+  border: 1px solid goldenrod;
+  outline: none;
+  background-color: transparent;
+  color: white;
+}
+
+.otp-modal-content button {
+  margin-top: 1rem;
+  padding: 0.8rem 1.5rem;
+  background-color: goldenrod;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.timer-text {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: #ccc;
+}
+
+.resend-link {
+  color: goldenrod;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+@media screen and (max-width: 580px) {
+  .admin-login-form {
+    padding: 1.5rem 1rem;
+    /* margin: 20px auto; */
+    margin-right: 65px;
+    max-width: 80%;
+  }
+
+  .admin-login-form input,
+  .otp-input {
+    width: 90%;
+  }
+
+  .otp-modal-content input {
+    width: 85%;
+  }
+
+  .admin-logo {
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+  }
+
+  .welcome-text h1 {
+    font-size: 20px;
+  }
+
+  .admin-login-form h2 {
+    font-size: 1.3rem;
+  }
+  .welcome-underline {
+    width: 90%;
+  }
+
+  .admin-login-form p {
+    font-size: 0.9rem;
+  }
+
+  .otp-modal-content {
+    padding: 1.2rem;
+  }
+
+  .otp-modal-content button {
+    width: 100%;
+    padding: 0.7rem;
+  }
+  /* //model otp */
+
+  .otp-modal-content{
+    width: 65%;
+  }
+}
+@media screen and (max-width: 360px) {
+  .admin-login-form {
+    padding: 1rem;
+  }
+
+  .admin-login-container {
+    padding: 0.5rem;
+  }
+
+  .admin-login-form button,
+  .send-otp-btn {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+
+  .otp-modal-content {
+    max-width: 95%;
+  }
+}
