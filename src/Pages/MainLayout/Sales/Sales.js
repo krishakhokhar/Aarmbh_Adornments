@@ -65,7 +65,7 @@ const Sales = () => {
             
             try {
                 const response = await axios.get(API.getAllitemsname);
-                setItemNames(response.data.data);
+                setItemNames(response.data.data.reverse());
             } catch (error) {
                 console.error('Failed to fetch item names:', error);
             }
@@ -217,7 +217,7 @@ const Sales = () => {
             const response = await fetch(API.getallsalesData);
             const result = await response.json();
             if (response.ok) {
-                setSalesData(result.data);
+                setSalesData(result.data.reverse());
             } else {
                 console.error(result.message);
             }

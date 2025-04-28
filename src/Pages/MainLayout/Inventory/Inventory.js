@@ -573,7 +573,7 @@ const Inventory = () => {
                                                             backgroundColor:
                                                                 item.itemQty === 0
                                                                     ? '#f44336' // Out of Stock (red)
-                                                                    : item.itemQty === 2
+                                                                    : item.itemQty <= 2
                                                                         ? '#ff9800' // Low Stock (orange)
                                                                         : '#4caf50', // In Stock (green)
                                                             color: 'white',
@@ -586,11 +586,12 @@ const Inventory = () => {
                                                     >
                                                         {item.itemQty === 0
                                                             ? 'Out of Stock'
-                                                            : item.itemQty === 2
+                                                            : item.itemQty <= 2
                                                                 ? 'Low Stock'
                                                                 : 'In Stock'}
                                                     </span>
                                                 </TableCell>
+
 
                                                 <TableCell align="center">
                                                     <Button
