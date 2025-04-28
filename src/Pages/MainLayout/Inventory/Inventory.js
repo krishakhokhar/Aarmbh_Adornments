@@ -486,75 +486,117 @@ const Inventory = () => {
             {/* Table Section */}
             <div className="mt-3">
                 <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                    <TableContainer sx={{ maxHeight: 440 }}>
-                        <Table stickyHeader aria-label="sticky table">
-                            <TableHead>
-                                <TableRow>
-                                    {columns.map((column) => (
-                                        <TableCell
-                                            key={column.id}
-                                            align={column.align || 'left'}
-                                            sx={{
-                                                minWidth: column.minWidth,
-                                                fontWeight: 'bold',
-                                                color: 'white',
-                                                bgcolor: '#0d3b3d',
-                                                borderBottom: '1px solid #ccc',
-                                            }}
-                                        >
-                                            {column.label}
-                                        </TableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {filteredItems
-                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                    .map((item, index) => (
-                                        <TableRow
-                                            hover
-                                            role="checkbox"
-                                            tabIndex={-1}
-                                            key={item._id}
-                                            sx={{
-                                                backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white',
-                                                '&:hover': { backgroundColor: '#e0f7fa' },
-                                            }}
-                                        >
-                                            <TableCell>{item.itemname}</TableCell>
-                                            <TableCell>{item.itemcategory}</TableCell>
-                                            <TableCell align="right">{item.buyingprice}</TableCell>
-                                            <TableCell align="right">{item.sellingprice}</TableCell>
-                                            <TableCell align="right">{item.itemQty}</TableCell>
-                                            <TableCell align="right">
-                                                <span
-                                                    style={{
-                                                        backgroundColor:
-                                                            item.status === 'In Stock'
-                                                                ? '#4caf50'
-                                                                : item.status === 'Low Stock'
-                                                                    ? '#ff9800'
-                                                                    : '#f44336',
-                                                        color: 'white',
-                                                        padding: '4px 12px',
-                                                        borderRadius: '12px',
-                                                        fontWeight: 'bold',
-                                                        minWidth: '90px',
-                                                        textAlign: 'center',
-                                                    }}
-                                                >
-                                                    {item.status}
-                                                </span>
+                    {/* Make the table container scrollable on small screens */}
+                    <Box sx={{ maxWidth: '100%', overflowX: 'auto' }}>
+                        <TableContainer sx={{ maxHeight: 440 }}>
+                            <Table stickyHeader aria-label="sticky table">
+                                <TableHead>
+                                    <TableRow>
+                                        {columns.map((column) => (
+                                            <TableCell
+                                                key={column.id}
+                                                align={column.align || 'left'}
+                                                sx={{
+                                                    minWidth: column.minWidth,
+                                                    fontWeight: 'bold',
+                                                    color: 'white',
+                                                    bgcolor: '#0d3b3d',
+                                                    borderBottom: '1px solid #ccc',
+                                                }}
+                                            >
+                                                {column.label}
                                             </TableCell>
-                                            <TableCell align="center">
-                                                <Button variant="contained" color="primary" size="small" startIcon={<Pencil size={16} />} sx={{ mr: 1 }} onClick={() => handleEdit(item)} />
-                                                <Button variant="contained" color="error" size="small" startIcon={<Trash2 size={16} />} onClick={() => handleDelete(item._id)} />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredItems
+                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        .map((item, index) => (
+                                            <TableRow
+                                                hover
+                                                role="checkbox"
+                                                tabIndex={-1}
+                                                key={item._id}
+                                                sx={{
+                                                    backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white',
+                                                    '&:hover': { backgroundColor: '#e0f7fa' },
+                                                }}
+                                            >
+                                                <TableCell>{item.itemname}</TableCell>
+                                                <TableCell>{item.itemcategory}</TableCell>
+                                                <TableCell align="right">{item.buyingprice}</TableCell>
+                                                <TableCell align="right">{item.sellingprice}</TableCell>
+                                                <TableCell align="right">{item.itemQty}</TableCell>
+                                                {/* <TableCell align="right">
+                                                    <span
+                                                        style={{
+                                                            backgroundColor:
+                                                                item.status === 'In Stock'
+                                                                    ? '#4caf50'
+                                                                    : item.status === 'Low Stock'
+                                                                        ? '#ff9800'
+                                                                        : '#f44336',
+                                                            color: 'white',
+                                                            padding: '4px 12px',
+                                                            borderRadius: '12px',
+                                                            fontWeight: 'bold',
+                                                            minWidth: '90px',
+                                                            textAlign: 'center',
+                                                        }}
+                                                    >
+                                                        {item.status}
+                                                    </span>
+                                                </TableCell> */}
+
+                                                <TableCell align="right">
+                                                    <span
+                                                        style={{
+                                                            backgroundColor:
+                                                                item.itemQty === 0
+                                                                    ? '#f44336' // Out of Stock (red)
+                                                                    : item.itemQty === 2
+                                                                        ? '#ff9800' // Low Stock (orange)
+                                                                        : '#4caf50', // In Stock (green)
+                                                            color: 'white',
+                                                            padding: '4px 12px',
+                                                            borderRadius: '12px',
+                                                            fontWeight: 'bold',
+                                                            minWidth: '90px',
+                                                            textAlign: 'center',
+                                                        }}
+                                                    >
+                                                        {item.itemQty === 0
+                                                            ? 'Out of Stock'
+                                                            : item.itemQty === 2
+                                                                ? 'Low Stock'
+                                                                : 'In Stock'}
+                                                    </span>
+                                                </TableCell>
+
+                                                <TableCell align="center">
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        size="small"
+                                                        startIcon={<Pencil size={16} />}
+                                                        sx={{ mr: 1 }}
+                                                        onClick={() => handleEdit(item)}
+                                                    />
+                                                    <Button
+                                                        variant="contained"
+                                                        color="error"
+                                                        size="small"
+                                                        startIcon={<Trash2 size={16} />}
+                                                        onClick={() => handleDelete(item._id)}
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
 
                     {/* Pagination */}
                     <TablePagination
@@ -568,6 +610,7 @@ const Inventory = () => {
                     />
                 </Paper>
             </div>
+
         </>
     );
 };

@@ -13,6 +13,13 @@ const API = {
     updateItems: (editItemId) => `${baseUrl}/admin/updateitems/${editItemId}`,
     getItemsById: (itemId) => `${baseUrl}/admin/getitemsbyid/${itemId}`,
     deleteitmsById: (itemId) => `${baseUrl}/admin/deleteitems/${itemId}`,
+    getAllitemsname : `${baseUrl}/admin/get/allitemsname`,
+    addSalesData : `${baseUrl}/admin/add/salesdetails`,
+    getallsalesData : `${baseUrl}/admin/get/allsales`,
+    updateSalesData : `${baseUrl}/admin/update/sales`,
+    getSalesDataById : `${baseUrl}/admin/get/sales`,
+    deleteSalesDataById :`${baseUrl}/admin/delete/sales`, 
+
 
 
 };

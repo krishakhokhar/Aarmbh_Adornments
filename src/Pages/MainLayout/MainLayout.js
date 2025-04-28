@@ -19,6 +19,7 @@ import { PackageOpen, BadgeDollarSign, Users, Calculator, ChartLine, ShoppingCar
 import logo from '../../images/logo.png'; // <-- your uploaded logo
 import UserProfile from './UserProfile/UserProfile';
 import Inventory from './Inventory/Inventory';
+import Sales from './Sales/Sales';
 
 const NAVIGATION = [
     {
@@ -95,7 +96,7 @@ function DemoPageContent({ pathname }) {
             case 'purchases':
                 return <Typography>Purchases Content</Typography>;
             case 'sales':
-                return <Typography>Sales Content</Typography>;
+                return <Typography><Sales /></Typography>;
             case 'Vendors':
                 return <Typography>Vendors Content</Typography>;
             case 'Calculator':
