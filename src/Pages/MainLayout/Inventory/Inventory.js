@@ -16,13 +16,16 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import API from '../../../Server';
+import Loader from '../../Loader/Loader';
 
 const Inventory = () => {
     const [value, setValue] = React.useState(0);
     const [open, setOpen] = React.useState(false);
     const [searchTerm, setSearchTerm] = React.useState('');
     const [isEditMode, setIsEditMode] = React.useState(false); // to track add or edit
-    const [editItemId, setEditItemId] = React.useState(null);   // to store item ID during edit
+    const [editItemId, setEditItemId] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
+    // to store item ID during edit
 
 
     const [formData, setFormData] = React.useState({
@@ -38,6 +41,7 @@ const Inventory = () => {
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
     React.useEffect(() => {
+
         axios
             .get(API.getItems)
             .then((response) => {
@@ -113,6 +117,7 @@ const Inventory = () => {
         try {
             if (isEditMode) {
                 // Update API
+                setLoading(true)
                 const response = await axios.put(API.updateItems(editItemId), formData);
 
                 if (response.data && response.data.message === "Item updated successfully!") {
@@ -168,6 +173,8 @@ const Inventory = () => {
                 text: isEditMode ? 'Failed to update item!' : 'Failed to add item!',
                 showConfirmButton: true,
             });
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -183,6 +190,7 @@ const Inventory = () => {
 
     const handleEdit = async (item) => {
         try {
+            setLoading(true)
             const response = await axios.get(API.getItemsById(item._id));
             if (response.data && response.data.message === "Item fetched successfully!") {
                 setFormData(response.data.data); // Set formData with fetched item
@@ -198,6 +206,8 @@ const Inventory = () => {
                 text: 'Failed to fetch item!',
                 showConfirmButton: true,
             });
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -215,6 +225,7 @@ const Inventory = () => {
         });
 
         if (confirmResult.isConfirmed) {
+            setLoading(true)
             try {
                 const response = await axios.delete(API.deleteitmsById(id));
                 console.log('Item deleted successfully:', response.data);
@@ -240,6 +251,8 @@ const Inventory = () => {
                     showConfirmButton: false,
                     timer: 2000,
                 });
+            } finally {
+                setLoading(false)
             }
         }
     };
@@ -274,6 +287,11 @@ const Inventory = () => {
 
     return (
         <>
+            {
+                loading && (
+                    <Loader />
+                )
+            }
             <div className="container-fluid mt-2">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h1>Inventory</h1>

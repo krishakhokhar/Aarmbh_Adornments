@@ -17,6 +17,7 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import API from '../../../Server';
+import Loader from '../../Loader/Loader';
 
 const Sales = () => {
     const [open, setOpen] = React.useState(false);
@@ -29,10 +30,7 @@ const Sales = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
-
-
-
-
+    const [loading, setLoading] = React.useState(false);
     const [itemNames, setItemNames] = useState([]);
     const [formData, setFormData] = useState({
         productname: '',
@@ -64,6 +62,7 @@ const Sales = () => {
     useEffect(() => {
         // Fetch all product names
         const fetchItemNames = async () => {
+            
             try {
                 const response = await axios.get(API.getAllitemsname);
                 setItemNames(response.data.data);
@@ -90,6 +89,7 @@ const Sales = () => {
         try {
             if (isEditing) {
                 // Update sale
+                setLoading(true);
                 const response = await axios.put(`${API.updateSalesData}/${editingId}`, formData);
                 if (response.status === 200) {
                     Swal.fire({
@@ -133,11 +133,14 @@ const Sales = () => {
                 title: 'Failed to save Sale',
                 text: error.response?.data?.message || 'Something went wrong!',
             });
+        }finally{
+            setLoading(false);
         }
     };
 
     const handleEdit = async (id) => {
         try {
+            setLoading(true);
             const response = await axios.get(`${API.getSalesDataById}/${id}`);
             const saleData = response.data.data;
 
@@ -159,6 +162,8 @@ const Sales = () => {
         } catch (error) {
             console.error('Error fetching sale:', error);
             Swal.fire('Error', 'Failed to fetch sale details', 'error');
+        }finally{
+            setLoading(false);
         }
     };
 
@@ -174,12 +179,15 @@ const Sales = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
+                    setLoading(true);
                     await axios.delete(`${API.deleteSalesDataById}/${id}`);
                     Swal.fire('Deleted!', 'Sale has been deleted.', 'success');
                     fetchSalesData();
                 } catch (error) {
                     console.error('Error deleting sale:', error);
                     Swal.fire('Error', 'Failed to delete sale', 'error');
+                }finally{
+                    setLoading(false);
                 }
             }
         });
@@ -222,6 +230,11 @@ const Sales = () => {
 
     return (
         <>
+            {
+                loading && (
+                    <Loader />
+                )
+            }
             <div className="container-fluid mt-2">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h1>Sales</h1>

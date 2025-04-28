@@ -22,7 +22,7 @@ const Login = () => {
     const [otp, setOtp] = useState("");
     const [timer, setTimer] = useState(60);
     const [resendVisible, setResendVisible] = useState(false);
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
 
     const togglePassword = () => setShowPassword(!showPassword);
 
