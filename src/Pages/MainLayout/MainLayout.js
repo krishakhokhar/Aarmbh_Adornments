@@ -21,6 +21,9 @@ import UserProfile from './UserProfile/UserProfile';
 import Inventory from './Inventory/Inventory';
 import Sales from './Sales/Sales';
 import Vendors from './Vendors/Vendors';
+import Purchases from './Purchase/Purchases';
+import Dashboard from './Dashboard/Dashboard';
+import Reports from './Reports/Reports';
 
 const NAVIGATION = [
     {
@@ -51,11 +54,6 @@ const NAVIGATION = [
         segment: 'Vendors',
         title: 'Vendors',
         icon: <Users />,
-    },
-    {
-        segment: 'Calculator',
-        title: 'Calculator',
-        icon: <Calculator />,
     },
     {
         segment: 'Reports',
@@ -89,21 +87,19 @@ function DemoPageContent({ pathname }) {
     const renderContent = () => {
         switch (segment) {
             case 'dashboard':
-                return <Typography>Welcome to the Dashboard</Typography>;
+                return <Typography><Dashboard /></Typography>;
             case 'inventory':
                 return <Typography>
                     <Inventory />
                 </Typography>;
             case 'purchases':
-                return <Typography>Purchases Content</Typography>;
+                return <Typography><Purchases /></Typography>;
             case 'sales':
                 return <Typography><Sales /></Typography>;
             case 'Vendors':
                 return <Typography><Vendors /></Typography>;
-            case 'Calculator':
-                return <Typography>Calculator Content</Typography>;
             case 'Reports':
-                return <Typography>Reports Content</Typography>;
+                return <Typography><Reports /></Typography>;
             case 'profile':
                 return <Typography> <UserProfile /></Typography>;
             default:

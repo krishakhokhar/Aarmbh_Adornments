@@ -23,6 +23,10 @@ const API = {
     createVendor: `${baseUrl}/admin/create/vendores`,
     updateVendor: (id) => `${baseUrl}/admin/update/vendores/${id}`,
     deleteVendor: (id) => `${baseUrl}/admin/delete/vendores/${id}`,
+    createpurchasedata: `${baseUrl}/admin/create/purchase`,
+    getAllPurchasedata: `${baseUrl}/admin/getall/purchasedata`,
+    deleteDataById: (id) => `${baseUrl}/admin/delete/purchasedata/${id}`,
+
 };
 
 export default API;

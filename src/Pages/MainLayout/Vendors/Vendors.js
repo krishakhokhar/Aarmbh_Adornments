@@ -110,14 +110,11 @@ const Vendors = () => {
 
 
     const fetchVendors = async () => {
-        setLoading(true);
         try {
             const response = await axios.get(API.getAllVendors);
             setVendors(response.data.data.reverse());
         } catch (error) {
             console.error('Error fetching vendors:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
