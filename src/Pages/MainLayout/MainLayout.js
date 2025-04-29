@@ -20,6 +20,7 @@ import logo from '../../images/logo.png'; // <-- your uploaded logo
 import UserProfile from './UserProfile/UserProfile';
 import Inventory from './Inventory/Inventory';
 import Sales from './Sales/Sales';
+import Vendors from './Vendors/Vendors';
 
 const NAVIGATION = [
     {
@@ -98,7 +99,7 @@ function DemoPageContent({ pathname }) {
             case 'sales':
                 return <Typography><Sales /></Typography>;
             case 'Vendors':
-                return <Typography>Vendors Content</Typography>;
+                return <Typography><Vendors /></Typography>;
             case 'Calculator':
                 return <Typography>Calculator Content</Typography>;
             case 'Reports':
