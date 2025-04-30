@@ -5,6 +5,7 @@ import axios from 'axios';
 import CountUp from 'react-countup';
 import ReactApexChart from 'react-apexcharts';
 import API from '../../../Server';
+import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
 
 const Dashboard = () => {
     const [showCount, setShowCount] = useState(false);
@@ -197,102 +198,64 @@ const Dashboard = () => {
 
     const isPendingGrowthPositive1 = pendingVendorData.growthPercentage >= 0;
 
-    // Pie Chart
-
-    const [state, setState] = useState({
-        series: [],
-        options: {
-            chart: {
-                width: 380,
-                type: 'pie',
-            },
-            labels: [],
-            responsive: [
-                {
-                    breakpoint: 480,
-                    options: {
-                        chart: {
-                            width: 200
-                        },
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            ]
-        },
-    });
+    // Pie Chart jwelery
+    const [pieData, setPieData] = useState([]);
 
     useEffect(() => {
-        // Fetching data from API
-        fetch('http://localhost:2222/admin/get/jwelery/sales/data')
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.message === 'Jewelry sales statistics fetched successfully') {
-                    const series = data.data.map((item) => item.percentageSold);
-                    const labels = data.data.map((item) => item.itemname);
-
-                    setState((prevState) => ({
-                        ...prevState,
-                        series: series,
-                        options: {
-                            ...prevState.options,
-                            labels: labels,
-                        },
-                    }));
-                }
-            })
-            .catch((error) => console.error('Error fetching data:', error));
-    }, []);
-
-    const [chartState, setChartState] = useState({
-        series: [],
-        options: {
-            chart: {
-                width: 380,
-                type: 'pie',
-            },
-            labels: [],
-            responsive: [{
-                breakpoint: 480,
-                options: {
-                    chart: {
-                        width: 200,
-                    },
-                    legend: {
-                        position: 'bottom',
-                    },
-                },
-            }],
-        },
-    });
-
-    useEffect(() => {
-        // Fetch the data from the API
-        axios.get('http://localhost:2222/admin/get/rudrax/sales/data')
+        axios.get(API.getalljeweldataonPiechart)
             .then((response) => {
-                if (response.data.message === 'Rudrax sales statistics fetched successfully') {
-                    const data = response.data.data;
+                const salesData = response.data.data;
 
-                    // Extracting item names and sold quantities for the pie chart
-                    const labels = data.map(item => item.itemname);
-                    const series = data.map(item => item.percentageSold);
-
-                    // Updating the chart data and options
-                    setChartState(prevState => ({
-                        ...prevState,
-                        series,
-                        options: {
-                            ...prevState.options,
-                            labels,
-                        },
+                // Use only items with percentageSold > 0
+                const transformed = salesData
+                    .filter(item => item.percentageSold > 0)
+                    .map((item, index) => ({
+                        id: index,
+                        value: parseFloat(item.percentageSold.toFixed(2)),
+                        label: item.itemname,
                     }));
-                }
+
+                setPieData(transformed);
             })
             .catch((error) => {
                 console.error('Error fetching data:', error);
             });
     }, []);
+
+    const size = {
+        width: 500,
+        height: 400,
+    };
+
+    // Rudrax data on pie
+
+    const [rudraxChartData, setRudraxChartData] = useState([]);
+
+    useEffect(() => {
+        axios.get(API.getallRudraxdataonPiechart)
+            .then((res) => {
+                const rudraxData = res.data.data;
+
+                const filteredRudrax = rudraxData
+                    .filter(product => product.percentageSold > 0)
+                    .map((product, idx) => ({
+                        id: idx,
+                        value: parseFloat(product.percentageSold.toFixed(2)),
+                        label: product.itemname,
+                    }));
+
+                setRudraxChartData(filteredRudrax);
+            })
+            .catch((err) => {
+                console.error('Failed to fetch Rudrax sales data:', err);
+            });
+    }, []);
+
+    const chartSize = {
+        width: 500,
+        height: 400,
+    };
+
 
     return (
         <>
@@ -776,24 +739,44 @@ const Dashboard = () => {
             <div className='row mt-3'>
                 <div className='col-md-6'>
                     <h3>Jwelery</h3>
-                    <div id="chart">
-                        <ReactApexChart
-                            options={state.options}
-                            series={state.series}
-                            type="pie"
-                            width="100%"
-                        />
-                    </div>
+                    <PieChart
+                        series={[
+                            {
+                                data: pieData,
+                                arcLabel: (item) => `${item.value}%`,
+                                arcLabelMinAngle: 35,
+                                arcLabelRadius: '60%',
+                            },
+                        ]}
+                        sx={{
+                            [`& .${pieArcLabelClasses.root}`]: {
+                                fontWeight: 'bold',
+                                fill: '#ffffff',
+                            },
+                        }}
+                        {...size}
+                    />
                 </div>
 
                 <div className='col-md-6'>
                     <h3>Rudrax</h3>
-                    <div>
-                        <div id="chart">
-                            <ReactApexChart options={chartState.options} series={chartState.series} type="pie" width="100%" />
-                        </div>
-                        <div id="html-dist"></div>
-                    </div>
+                    <PieChart
+                        series={[
+                            {
+                                data: rudraxChartData,
+                                arcLabel: (item) => `${item.value}%`,
+                                arcLabelMinAngle: 35,
+                                arcLabelRadius: '60%',
+                            },
+                        ]}
+                        sx={{
+                            [`& .${pieArcLabelClasses.root}`]: {
+                                fontWeight: 'bold',
+                                fill: '#ffffff',
+                            },
+                        }}
+                        {...chartSize}
+                    />
                 </div>
             </div>
         </>

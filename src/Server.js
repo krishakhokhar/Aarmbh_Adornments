@@ -1,5 +1,5 @@
-const baseUrl = "http://localhost:2222";
-// const baseUrl = "https://aarambhbackend.onrender.com";
+// const baseUrl = "http://localhost:2222";
+const baseUrl = "https://aarambhbackend.onrender.com";
 
 // Define your endpoints
 const API = {
@@ -29,22 +29,17 @@ const API = {
     getTotalRevenuedata: `${baseUrl}/admin/get/totalnumber/sales`,
     getTotalSalesdata: `${baseUrl}/admin/get/totalrevenue/bystatus`,
     getonlinepaymentsalesdata: `${baseUrl}/admin/get/onlinesummery/revenue`,
-    getsalescashdata :`${baseUrl}/admin/get/cashsummery/revenue`,
-    getsalespendingdata :`${baseUrl}/admin/get/pendingsummery/revenue`,
-    getinventorydata :`${baseUrl}/admin/get/totalrevenue/inventoryvalue`,
-    getallpurchasedata :`${baseUrl}/admin/get/alltotal/purchaseprice`,
-    getallVendoresdata :`${baseUrl}/admin/get/alltotal/activevendores`,
-    getallVendorestotalpaymentdata :`${baseUrl}/admin/get/all/vendorespayment/total`,
-    getallVendorestotalpendingdata :`${baseUrl}/admin/get/prndingvendores/total`,
-
-
-
-
-
-
-
-
-
+    getsalescashdata: `${baseUrl}/admin/get/cashsummery/revenue`,
+    getsalespendingdata: `${baseUrl}/admin/get/pendingsummery/revenue`,
+    getinventorydata: `${baseUrl}/admin/get/totalrevenue/inventoryvalue`,
+    getallpurchasedata: `${baseUrl}/admin/get/alltotal/purchaseprice`,
+    getallVendoresdata: `${baseUrl}/admin/get/alltotal/activevendores`,
+    getallVendorestotalpaymentdata: `${baseUrl}/admin/get/all/vendorespayment/total`,
+    getallVendorestotalpendingdata: `${baseUrl}/admin/get/prndingvendores/total`,
+    getalljeweldataonPiechart: `${baseUrl}/admin/get/jwelery/sales/data`,
+    getallRudraxdataonPiechart: `${baseUrl}/admin/get/rudrax/sales/data`,
+    gettheQtydatainbarcharts : `${baseUrl}/admin/get/itemQtytotal/barcharts`,
+    getMonthlysalesdata : `${baseUrl}/admin/get/monthlysales/charts`
 };
 
 export default API;
