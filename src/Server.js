@@ -1,5 +1,5 @@
-// const baseUrl = "http://localhost:2222";
-const baseUrl = "https://aarambhbackend.onrender.com";
+const baseUrl = "http://localhost:2222";
+// const baseUrl = "https://aarambhbackend.onrender.com";
 
 // Define your endpoints
 const API = {
@@ -26,6 +26,24 @@ const API = {
     createpurchasedata: `${baseUrl}/admin/create/purchase`,
     getAllPurchasedata: `${baseUrl}/admin/getall/purchasedata`,
     deleteDataById: (id) => `${baseUrl}/admin/delete/purchasedata/${id}`,
+    getTotalRevenuedata: `${baseUrl}/admin/get/totalnumber/sales`,
+    getTotalSalesdata: `${baseUrl}/admin/get/totalrevenue/bystatus`,
+    getonlinepaymentsalesdata: `${baseUrl}/admin/get/onlinesummery/revenue`,
+    getsalescashdata :`${baseUrl}/admin/get/cashsummery/revenue`,
+    getsalespendingdata :`${baseUrl}/admin/get/pendingsummery/revenue`,
+    getinventorydata :`${baseUrl}/admin/get/totalrevenue/inventoryvalue`,
+    getallpurchasedata :`${baseUrl}/admin/get/alltotal/purchaseprice`,
+    getallVendoresdata :`${baseUrl}/admin/get/alltotal/activevendores`,
+    getallVendorestotalpaymentdata :`${baseUrl}/admin/get/all/vendorespayment/total`,
+    getallVendorestotalpendingdata :`${baseUrl}/admin/get/prndingvendores/total`,
+
+
+
+
+
+
+
+
 
 };
 

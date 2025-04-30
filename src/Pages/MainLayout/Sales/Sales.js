@@ -47,12 +47,18 @@ const Sales = () => {
         return salesData.filter((sale) => {
             const customerName = sale.customername.toLowerCase();
             const productName = sale.productname.toLowerCase();
+            const paymentStatus = sale.paymentstatus.toLowerCase(); // Include payment status
             const query = searchQuery.toLowerCase();
 
-            // Filter by customer name or product name
-            return customerName.includes(query) || productName.includes(query);
+            // Filter by customer name, product name, or payment status
+            return (
+                customerName.includes(query) ||
+                productName.includes(query) ||
+                paymentStatus.includes(query)
+            );
         });
     };
+
 
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
@@ -62,7 +68,7 @@ const Sales = () => {
     useEffect(() => {
         // Fetch all product names
         const fetchItemNames = async () => {
-            
+
             try {
                 const response = await axios.get(API.getAllitemsname);
                 setItemNames(response.data.data.reverse());
@@ -133,7 +139,7 @@ const Sales = () => {
                 title: 'Failed to save Sale',
                 text: error.response?.data?.message || 'Something went wrong!',
             });
-        }finally{
+        } finally {
             setLoading(false);
         }
     };
@@ -162,7 +168,7 @@ const Sales = () => {
         } catch (error) {
             console.error('Error fetching sale:', error);
             Swal.fire('Error', 'Failed to fetch sale details', 'error');
-        }finally{
+        } finally {
             setLoading(false);
         }
     };
@@ -186,7 +192,7 @@ const Sales = () => {
                 } catch (error) {
                     console.error('Error deleting sale:', error);
                     Swal.fire('Error', 'Failed to delete sale', 'error');
-                }finally{
+                } finally {
                     setLoading(false);
                 }
             }
