@@ -256,6 +256,25 @@ const Dashboard = () => {
         height: 400,
     };
 
+    const [TodaysalesData, setTodaySalesData] = useState({
+        totalAmount: 0,
+        growthPercentage: 0,
+        count: 0,
+    });
+
+    const TodayisPositive = salesData.growthPercentage >= 0;
+
+    useEffect(() => {
+        axios.get(API.admingetTodaysRevenue)
+            .then((res) => {
+                const { totalAmount, growthPercentage, count } = res.data;
+                setTodaySalesData({ totalAmount, growthPercentage, count });
+            })
+            .catch((err) => {
+                console.error("Failed to fetch today's sales:", err);
+            });
+    }, []);
+
 
     return (
         <>
@@ -305,6 +324,41 @@ const Dashboard = () => {
                             {/* Subtext */}
                             <Typography variant="caption" color="text.secondary">
                                 from last month
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </div>
+
+
+                <div className="col-12 col-sm-6 col-lg-3 mb-4">
+                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
+                        <CardContent>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                                <Typography variant="subtitle1" fontWeight="bold">
+                                    Today's Total Revenue
+                                </Typography>
+                                <DollarSign size={20} color="#888" />
+                            </Box>
+
+                            <Typography variant="h5" fontWeight="bold" mt={1} sx={{ color: '#4caf50' }}>
+                                ₹<CountUp end={TodaysalesData.totalAmount} duration={1.5} separator="," />
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: TodayisPositive ? 'success.main' : 'error.main',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                }}
+                            >
+                                {TodayisPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />}
+                                {TodaysalesData.growthPercentage}%
+                            </Typography>
+
+                            <Typography variant="caption" color="text.secondary">
+                                from yesterday
                             </Typography>
                         </CardContent>
                     </Card>

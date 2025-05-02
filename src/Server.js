@@ -1,5 +1,5 @@
-// const baseUrl = "http://localhost:2222";
-const baseUrl = "https://aarambhbackend.onrender.com";
+const baseUrl = "http://localhost:2222";
+// const baseUrl = "https://aarambhbackend.onrender.com";
 
 // Define your endpoints
 const API = {
@@ -39,7 +39,8 @@ const API = {
     getalljeweldataonPiechart: `${baseUrl}/admin/get/jwelery/sales/data`,
     getallRudraxdataonPiechart: `${baseUrl}/admin/get/rudrax/sales/data`,
     gettheQtydatainbarcharts : `${baseUrl}/admin/get/itemQtytotal/barcharts`,
-    getMonthlysalesdata : `${baseUrl}/admin/get/monthlysales/charts`
+    getMonthlysalesdata : `${baseUrl}/admin/get/monthlysales/charts`,
+    admingetTodaysRevenue : `${baseUrl}/admin/get/todays/sales/data`
 };
 
 export default API;
