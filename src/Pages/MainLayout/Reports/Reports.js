@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import API from '../../../Server';
 import {
   PieChart, pieArcLabelClasses,
@@ -6,14 +6,8 @@ import {
 
 import {
   BarChart,
-  BarSeries,
-  XAxis,
-  YAxis,
-  ChartContainer,
-
 } from "@mui/x-charts";
 
-import { Card, CardContent, Typography } from '@mui/material';
 import axios from 'axios';
 
 const Reports = () => {

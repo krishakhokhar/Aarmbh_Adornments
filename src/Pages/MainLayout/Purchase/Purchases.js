@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Button, TextField, InputAdornment, Tabs, Tab, Box } from '@mui/material';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Button, TextField, InputAdornment, Box } from '@mui/material';
+import { Plus, Trash2, Search } from 'lucide-react';
 import Backdrop from '@mui/material/Backdrop';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
@@ -21,7 +21,7 @@ import Loader from '../../Loader/Loader';
 const Purchases = () => {
 
     const [open, setOpen] = React.useState(false);
-    const [loading, setLoading] = React.useState(false);
+    const [loading] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [purchases, setPurchases] = useState([]);
@@ -153,33 +153,6 @@ const Purchases = () => {
             }
         });
     };
-
-    const handleEdit = async (id) => {
-        try {
-            const response = await axios.get(`http://localhost:2222/admin/get/purchasebyid/${id}`);
-
-            if (response.data && response.data.data) {
-                const data = response.data.data;
-
-                setFormData({
-                    _id: data._id ?? '', // Ensure fallback
-                    productname: data.productname ?? '',
-                    date: data.date ?? '',
-                    productqty: data.productqty ?? '',
-                    productprice: data.productprice ?? '',
-                    paymentmod: data.paymentmod ?? 'Cash',
-                });
-                setOpen(true);
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: 'Failed to fetch purchase data.',
-            });
-        }
-    };
-
 
 
 

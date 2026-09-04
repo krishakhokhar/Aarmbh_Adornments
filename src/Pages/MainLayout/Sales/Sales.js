@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './Sales.css'
-import { Button, TextField, InputAdornment, Tabs, Tab, Box } from '@mui/material';
+import { Button, TextField, InputAdornment, Box } from '@mui/material';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import Backdrop from '@mui/material/Backdrop';
 import Modal from '@mui/material/Modal';

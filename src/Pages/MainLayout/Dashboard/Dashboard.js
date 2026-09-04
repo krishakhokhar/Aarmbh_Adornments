@@ -3,13 +3,10 @@ import { Card, CardContent, Typography, Box } from '@mui/material';
 import { DollarSign, ShoppingBag, PackageOpen, EthernetPort, HandCoins, ScrollText, Users, ChartNoAxesCombined, ChartCandlestick, Clock } from 'lucide-react';
 import axios from 'axios';
 import CountUp from 'react-countup';
-import ReactApexChart from 'react-apexcharts';
 import API from '../../../Server';
 import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
 
 const Dashboard = () => {
-    const [showCount, setShowCount] = useState(false);
-
     // total Revenue
     const [data, setData] = useState({
         totalRevenue: 0,
