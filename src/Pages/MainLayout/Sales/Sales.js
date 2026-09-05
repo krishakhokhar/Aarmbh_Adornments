@@ -89,13 +89,22 @@ const Sales = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-            total: name === 'qty' || name === 'productprice'
-                ? (name === 'qty' ? value : prevData.qty) * (name === 'productprice' ? value : prevData.productprice)
-                : prevData.total
-        }));
+        setFormData((prevData) => {
+            const next = { ...prevData, [name]: value };
+
+            // Selecting a product auto-fills its current Selling Price as a
+            // sensible default - still editable afterwards if needed.
+            if (name === 'productname') {
+                const matchedItem = items.find((item) => item.itemname === value);
+                next.productprice = matchedItem ? matchedItem.sellingprice : '';
+            }
+
+            const qtyForTotal = name === 'qty' ? value : next.qty;
+            const priceForTotal = name === 'productprice' ? value : next.productprice;
+            next.total = (Number(qtyForTotal) || 0) * (Number(priceForTotal) || 0);
+
+            return next;
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -368,6 +377,7 @@ const Sales = () => {
                                                 value={formData.productname}
                                                 onChange={handleChange}
                                                 variant="outlined"
+                                                InputLabelProps={{ shrink: true }}
                                                 SelectProps={{ native: true }}
                                             >
                                                 <option value="">Select Product</option>
@@ -416,6 +426,7 @@ const Sales = () => {
                                                 value={formData.category}
                                                 onChange={handleChange}
                                                 variant="outlined"
+                                                InputLabelProps={{ shrink: true }}
                                                 SelectProps={{ native: true }}
                                             >
                                                 <option value="">Select Category</option>
@@ -453,6 +464,9 @@ const Sales = () => {
                                                 value={formData.productprice}
                                                 onChange={handleChange}
                                                 variant="outlined"
+                                                InputProps={{
+                                                    startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+                                                }}
                                             />
                                         </div>
 
@@ -463,12 +477,16 @@ const Sales = () => {
                                                 size="small"
                                                 label="Total"
                                                 name="total"
-                                                type="number"
-                                                value={formData.total}
+                                                value={Number(formData.total || 0).toLocaleString('en-IN')}
                                                 InputProps={{
                                                     readOnly: true,
+                                                    startAdornment: <InputAdornment position="start">₹</InputAdornment>,
                                                 }}
                                                 variant="outlined"
+                                                sx={{
+                                                    '& .MuiInputBase-input': { fontWeight: 700, color: '#0d3b3d' },
+                                                    '& .MuiOutlinedInput-root': { bgcolor: '#faf8f4' },
+                                                }}
                                             />
                                         </div>
 
@@ -482,6 +500,7 @@ const Sales = () => {
                                                 value={formData.paymentstatus}
                                                 onChange={handleChange}
                                                 variant="outlined"
+                                                InputLabelProps={{ shrink: true }}
                                                 SelectProps={{ native: true }}
                                             >
                                                 <option value="">Select Payment Status</option>
