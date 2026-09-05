@@ -323,6 +323,8 @@ const Dashboard = () => {
                 </Typography>
             </Box>
 
+            <AarmbhAI />
+
             <div className='row'>
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
                     <StatCard icon={DollarSign} label="Total Revenue" value={data.totalRevenue} prefix="₹" growthPercentage={data.growthPercentage} accent="#0d3b3d" />
@@ -481,8 +483,6 @@ const Dashboard = () => {
                     </Card>
                 </div>
             </div>
-
-            <AarmbhAI />
         </>
 
     )

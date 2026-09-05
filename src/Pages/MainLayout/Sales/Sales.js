@@ -346,21 +346,22 @@ const Sales = () => {
                         <Box
                             className="aarmbh-modal-card"
                             sx={{
-                                width: { xs: '90%', sm: '80%', md: 600 },
-                                p: { xs: 2, md: 4 },
+                                width: { xs: '92%', sm: '85%', md: 560 },
+                                p: { xs: 2, md: 3 },
                             }}
                         >
-                            <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
+                            <Typography variant="h6" mb={2} fontWeight="bold" textAlign="center">
                                 {isEditing ? 'Edit Sale' : 'Add New Sale'}
                             </Typography>
 
                             <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
                                 <div className="container-fluid">
-                                    <div className="row g-3">
-                                        {/* Product Name */}
-                                        <div className="col-12">
+                                    <div className="row g-2">
+                                        {/* Row 1: Product | Date */}
+                                        <div className="col-12 col-md-6">
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 select
                                                 label="Select Product"
                                                 name="productname"
@@ -378,10 +379,10 @@ const Sales = () => {
                                             </TextField>
                                         </div>
 
-                                        {/* Date */}
-                                        <div className="col-12">
+                                        <div className="col-12 col-md-6">
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 label="Date"
                                                 name="date"
                                                 type="date"
@@ -392,10 +393,11 @@ const Sales = () => {
                                             />
                                         </div>
 
-                                        {/* Customer Name */}
-                                        <div className="col-12">
+                                        {/* Row 2: Customer | Category */}
+                                        <div className="col-12 col-md-6">
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 label="Customer Name"
                                                 name="customername"
                                                 value={formData.customername}
@@ -404,10 +406,10 @@ const Sales = () => {
                                             />
                                         </div>
 
-                                        {/* Category */}
-                                        <div className="col-12">
+                                        <div className="col-12 col-md-6">
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 select
                                                 label="Select Category"
                                                 name="category"
@@ -422,10 +424,11 @@ const Sales = () => {
                                             </TextField>
                                         </div>
 
-                                        {/* Quantity */}
+                                        {/* Row 3: Quantity | Product Price */}
                                         <div className="col-12 col-md-6">
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 label="Quantity"
                                                 name="qty"
                                                 type="number"
@@ -434,14 +437,14 @@ const Sales = () => {
                                                 value={formData.qty}
                                                 onChange={handleChange}
                                                 variant="outlined"
-                                                helperText={selectedItem ? `Available stock: ${selectedItem.itemQty}` : ' '}
+                                                helperText={selectedItem ? `Available: ${selectedItem.itemQty}` : ' '}
                                             />
                                         </div>
 
-                                        {/* Product Price */}
                                         <div className="col-12 col-md-6">
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 label="Product Price"
                                                 name="productprice"
                                                 type="number"
@@ -453,10 +456,11 @@ const Sales = () => {
                                             />
                                         </div>
 
-                                        {/* Total */}
-                                        <div className="col-12">
+                                        {/* Row 4: Total | Payment Status */}
+                                        <div className="col-12 col-md-6">
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 label="Total"
                                                 name="total"
                                                 type="number"
@@ -468,10 +472,10 @@ const Sales = () => {
                                             />
                                         </div>
 
-                                        {/* Payment Status */}
-                                        <div className="col-12">
+                                        <div className="col-12 col-md-6">
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 select
                                                 label="Payment Status"
                                                 name="paymentstatus"
@@ -488,13 +492,12 @@ const Sales = () => {
                                         </div>
 
                                         {/* Submit Button */}
-                                        <div className="col-12">
+                                        <div className="col-12 mt-1">
                                             <Button
                                                 variant="contained"
                                                 className="aarmbh-btn-primary"
                                                 fullWidth
                                                 type="submit"
-                                                size="large"
                                             >
                                                 {isEditing ? 'Update Sale' : 'Save Sale'}
                                             </Button>

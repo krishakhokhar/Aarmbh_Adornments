@@ -265,20 +265,22 @@ const Purchases = () => {
                     <Box
                         className="aarmbh-modal-card"
                         sx={{
-                            width: { xs: '90%', sm: '80%', md: 600 },
-                            p: { xs: 2, md: 4 },
+                            width: { xs: '92%', sm: '85%', md: 520 },
+                            p: { xs: 2, md: 3 },
                         }}
                     >
-                        <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
+                        <Typography variant="h6" mb={2} fontWeight="bold" textAlign="center">
                             Add New Purchase
                         </Typography>
 
                         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
                             <div className="container-fluid">
-                                <div className="row g-3">
-                                    <div className="col-12">
+                                <div className="row g-2">
+                                    {/* Row 1: Product | Date */}
+                                    <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             select
                                             label="Select Product"
                                             name="productname"
@@ -295,9 +297,10 @@ const Purchases = () => {
                                             ))}
                                         </TextField>
                                     </div>
-                                    <div className="col-12">
+                                    <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             type="date"
                                             label="Date"
                                             name="date"
@@ -309,9 +312,12 @@ const Purchases = () => {
                                             }}
                                         />
                                     </div>
+
+                                    {/* Row 2: Quantity | Price */}
                                     <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             label="Quantity"
                                             name="productqty"
                                             value={formData.productqty}
@@ -325,6 +331,7 @@ const Purchases = () => {
                                     <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             label="Price"
                                             name="productprice"
                                             value={formData.productprice}
@@ -335,9 +342,12 @@ const Purchases = () => {
                                             onWheel={(e) => e.target.blur()}
                                         />
                                     </div>
-                                    <div className="col-12">
+
+                                    {/* Row 3: Payment Mode */}
+                                    <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             select
                                             label="Payment Mode"
                                             name="paymentmod"
@@ -351,13 +361,14 @@ const Purchases = () => {
                                             <option value="Pending">Pending</option>
                                         </TextField>
                                     </div>
-                                    <div className="col-12">
+                                    <div className="col-12 col-md-6 d-none d-md-block" />
+
+                                    <div className="col-12 mt-1">
                                         <Button
                                             variant="contained"
                                             className="aarmbh-btn-primary"
                                             fullWidth
                                             type="submit"
-                                            size="large"
                                         >
                                             Save Purchase
                                         </Button>

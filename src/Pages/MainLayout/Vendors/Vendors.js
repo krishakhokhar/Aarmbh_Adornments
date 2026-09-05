@@ -270,17 +270,19 @@ const Vendors = () => {
                     <Box
                         className="aarmbh-modal-card"
                         sx={{
-                            width: { xs: '90%', sm: '80%', md: 600 },
-                            p: { xs: 2, md: 4 },
+                            width: { xs: '92%', sm: '85%', md: 560 },
+                            p: { xs: 2, md: 3 },
+                            maxHeight: '90vh',
+                            overflowY: 'auto',
                         }}
                     >
-                        <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
+                        <Typography variant="h6" mb={2} fontWeight="bold" textAlign="center">
                             {editMode ? 'Edit Vendor' : 'Add New Vendor'}
                         </Typography>
 
                         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
                             <div className="container-fluid">
-                                <div className="row g-3">
+                                <div className="row g-2">
                                     {[
                                         { label: 'Vendor Name', name: 'vendorname' },
                                         { label: 'Contact Person', name: 'contactperson' },
@@ -288,11 +290,11 @@ const Vendors = () => {
                                         { label: 'Location', name: 'location' },
                                         { label: 'Product', name: 'product' },
                                         { label: 'Order Date', name: 'orderdate', type: 'date' },
-                                        { label: 'Order Total', name: 'ordertotal', type: 'number' },
                                     ].map(({ label, name, type = 'text' }) => (
-                                        <div className="col-12" key={name}>
+                                        <div className="col-12 col-md-6" key={name}>
                                             <TextField
                                                 fullWidth
+                                                size="small"
                                                 label={label}
                                                 name={name}
                                                 type={type}
@@ -304,9 +306,23 @@ const Vendors = () => {
                                         </div>
                                     ))}
 
-                                    <div className="col-12">
+                                    <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
+                                            label="Order Total"
+                                            name="ordertotal"
+                                            type="number"
+                                            value={vendorForm.ordertotal || ''}
+                                            onChange={handleChange}
+                                            variant="outlined"
+                                        />
+                                    </div>
+
+                                    <div className="col-12 col-md-6">
+                                        <TextField
+                                            fullWidth
+                                            size="small"
                                             select
                                             label="Payment Status"
                                             name="paymentstatus"
@@ -322,9 +338,10 @@ const Vendors = () => {
                                         </TextField>
                                     </div>
 
-                                    <div className="col-12">
+                                    <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             select
                                             label="Status"
                                             name="status"
@@ -338,14 +355,14 @@ const Vendors = () => {
                                             <option value="Inactive">Inactive</option>
                                         </TextField>
                                     </div>
+                                    <div className="col-12 col-md-6 d-none d-md-block" />
 
-                                    <div className="col-12">
+                                    <div className="col-12 mt-1">
                                         <Button
                                             variant="contained"
                                             className="aarmbh-btn-primary"
                                             fullWidth
                                             type="submit"
-                                            size="large"
                                         >
                                             {editMode ? 'Update Vendor' : 'Add Vendor'}
                                         </Button>

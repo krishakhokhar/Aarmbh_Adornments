@@ -453,20 +453,22 @@ const Inventory = () => {
                     <Box
                         className="aarmbh-modal-card"
                         sx={{
-                            width: { xs: '90%', sm: '80%', md: 600 },
-                            p: { xs: 2, md: 4 },
+                            width: { xs: '92%', sm: '85%', md: 520 },
+                            p: { xs: 2, md: 3 },
                         }}
                     >
-                        <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
+                        <Typography variant="h6" mb={2} fontWeight="bold" textAlign="center">
                             {isEditMode ? 'Edit Inventory Item' : 'Add New Inventory Item'}
                         </Typography>
 
                         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
                             <div className="container-fluid">
-                                <div className="row g-3">
-                                    <div className="col-12">
+                                <div className="row g-2">
+                                    {/* Row 1: Item Name | Category */}
+                                    <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             label="Item Name"
                                             name="itemname"
                                             value={formData.itemname}
@@ -474,9 +476,10 @@ const Inventory = () => {
                                             variant="outlined"
                                         />
                                     </div>
-                                    <div className="col-12">
+                                    <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             select
                                             label="Select Category"
                                             name="itemcategory"
@@ -490,9 +493,11 @@ const Inventory = () => {
                                         </TextField>
                                     </div>
 
+                                    {/* Row 2: Buying Price | Selling Price */}
                                     <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             label="Buying Price"
                                             name="buyingprice"
                                             value={formData.buyingprice}
@@ -506,6 +511,7 @@ const Inventory = () => {
                                     <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             label="Selling Price"
                                             name="sellingprice"
                                             value={formData.sellingprice}
@@ -516,9 +522,12 @@ const Inventory = () => {
                                             onWheel={(e) => e.target.blur()}
                                         />
                                     </div>
+
+                                    {/* Row 3: Quantity | Status */}
                                     <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             label="Quantity"
                                             name="itemQty"
                                             value={formData.itemQty}
@@ -532,6 +541,7 @@ const Inventory = () => {
                                     <div className="col-12 col-md-6">
                                         <TextField
                                             fullWidth
+                                            size="small"
                                             select
                                             label="Select Status"
                                             name="status"
@@ -545,13 +555,12 @@ const Inventory = () => {
                                             <option value="Out Of Stock">Out Of Stock</option>
                                         </TextField>
                                     </div>
-                                    <div className="col-12">
+                                    <div className="col-12 mt-1">
                                         <Button
                                             variant="contained"
                                             className="aarmbh-btn-primary"
                                             fullWidth
                                             type="submit"
-                                            size="large"
                                         >
                                             {isEditMode ? 'Update Item' : 'Save Item'}
                                         </Button>

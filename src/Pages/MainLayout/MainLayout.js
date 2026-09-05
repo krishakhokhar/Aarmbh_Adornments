@@ -133,7 +133,41 @@ const demoTheme = createTheme({
         },
         MuiDrawer: {
             styleOverrides: {
-                paper: { borderRight: '1px solid #e7e2d6' },
+                paper: { borderRight: '1px solid #e7e2d6', backgroundColor: '#fffdf9' },
+            },
+        },
+        MuiListItemButton: {
+            styleOverrides: {
+                root: {
+                    borderRadius: 10,
+                    marginLeft: 8,
+                    marginRight: 8,
+                    marginTop: 2,
+                    marginBottom: 2,
+                    width: 'auto',
+                    transition: 'background-color 0.2s ease, color 0.2s ease',
+                    '&.Mui-selected': {
+                        backgroundColor: 'rgba(184,146,58,0.16)',
+                        color: '#0d3b3d',
+                        fontWeight: 700,
+                    },
+                    '&.Mui-selected:hover': {
+                        backgroundColor: 'rgba(184,146,58,0.22)',
+                    },
+                    '&:hover': {
+                        backgroundColor: 'rgba(13,59,61,0.06)',
+                    },
+                },
+            },
+        },
+        MuiListItemIcon: {
+            styleOverrides: {
+                root: { minWidth: 38, color: 'inherit' },
+            },
+        },
+        MuiListItemText: {
+            styleOverrides: {
+                primary: { fontSize: '0.92rem' },
             },
         },
     },

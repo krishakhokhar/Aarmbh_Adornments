@@ -71,14 +71,15 @@ const Login = () => {
 
                 // 🎉 Show success SweetAlert
                 Swal.fire({
-                    title: "Login Successful 🎉",
-                    text: "Welcome back, Admin!",
                     icon: "success",
-                    background: "#f0f0f0",
-                    color: "#333",
-                    showConfirmButton: false,
-                    timer: 2000,
-                    timerProgressBar: true,
+                    iconColor: "#b8923a",
+                    title: "Login Successful",
+                    html: '<p style="margin:0;color:#5a5f5c;font-size:0.95rem;">Welcome back to <strong style="color:#0d3b3d;">Aarmbh Adornments</strong> Admin Portal.</p>',
+                    background: "#fffdf9",
+                    confirmButtonText: "Continue",
+                    confirmButtonColor: "#0d3b3d",
+                    showConfirmButton: true,
+                    buttonsStyling: true,
                 }).then(() => {
                     // ✅ Redirect to main layout
                     navigate("/mainlayout");
