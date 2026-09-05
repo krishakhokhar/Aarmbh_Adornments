@@ -12,7 +12,16 @@ const app = express();
 
 app.use(express.json());
 
-const allowedOrigins = [process.env.CORS_ORIGIN_DEV, process.env.CORS_ORIGIN_PROD].filter(Boolean);
+// These two must always be allowed regardless of environment variable
+// configuration - env vars remain supported below for any additional
+// custom domain, but the app must not depend on them being set correctly.
+const REQUIRED_ORIGINS = ['http://localhost:3000', 'https://aarmbh-adornments.vercel.app'];
+
+const allowedOrigins = [
+    ...REQUIRED_ORIGINS,
+    process.env.CORS_ORIGIN_DEV,
+    process.env.CORS_ORIGIN_PROD,
+].filter(Boolean);
 const vercelPreviewRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
 
 app.use(cors({
