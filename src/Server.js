@@ -1,5 +1,6 @@
 // const baseUrl = "http://localhost:2222";
-const baseUrl = "http://localhost:5000";
+// const baseUrl = "http://localhost:5000";
+const baseUrl = "https://aarmbh-adornments.onrender.com";
 
 // Define your endpoints
 const API = {
