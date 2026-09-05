@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, Typography, Box } from '@mui/material';
-import { DollarSign, ShoppingBag, PackageOpen, EthernetPort, HandCoins, ScrollText, Users, ChartNoAxesCombined, ChartCandlestick, Clock } from 'lucide-react';
+import { DollarSign, ShoppingBag, PackageOpen, EthernetPort, HandCoins, ScrollText, Users, ChartNoAxesCombined, ChartCandlestick, Clock, Wallet } from 'lucide-react';
 import axios from 'axios';
 import CountUp from 'react-countup';
 import API from '../../../Server';
 import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
+import { BarChart } from '@mui/x-charts/BarChart';
+import AarmbhAI from './AarmbhAI';
 
 const Dashboard = () => {
     // total Revenue
@@ -272,6 +274,58 @@ const Dashboard = () => {
             });
     }, []);
 
+    // Total Profit
+    const [profitData, setProfitData] = useState({ totalProfit: 0, growthPercentage: 0 });
+    useEffect(() => {
+        axios.get(API.getTotalProfit)
+            .then((response) => setProfitData(response.data))
+            .catch((error) => console.error('Error fetching profit data:', error));
+    }, []);
+    const isProfitGrowthPositive = profitData.growthPercentage >= 0;
+
+    // Total Vendors (all, not just active)
+    const [totalVendorsCount, setTotalVendorsCount] = useState(0);
+    useEffect(() => {
+        axios.get(API.getTotalVendorsCount)
+            .then((response) => setTotalVendorsCount(response.data.totalVendors || 0))
+            .catch((error) => console.error('Error fetching total vendors count:', error));
+    }, []);
+
+    // Top Selling Products
+    const [topProducts, setTopProducts] = useState([]);
+    useEffect(() => {
+        axios.get(API.getTopSellingProducts)
+            .then((response) => setTopProducts(response.data.data || []))
+            .catch((error) => console.error('Error fetching top selling products:', error));
+    }, []);
+
+    // Sales vs Purchases (monthly)
+    const [monthlySales, setMonthlySales] = useState({ months: [], totals: [] });
+    useEffect(() => {
+        axios.get(API.getMonthlysalesdata)
+            .then((response) => {
+                const rows = response.data.data || [];
+                setMonthlySales({ months: rows.map((r) => r.month), totals: rows.map((r) => r.totalSales) });
+            })
+            .catch((error) => console.error('Error fetching monthly sales:', error));
+    }, []);
+
+    const [monthlyPurchases, setMonthlyPurchases] = useState({ months: [], totals: [] });
+    useEffect(() => {
+        axios.get(API.getMonthlyPurchasesData)
+            .then((response) => {
+                const rows = response.data.data || [];
+                setMonthlyPurchases({ months: rows.map((r) => r.month), totals: rows.map((r) => r.totalPurchases) });
+            })
+            .catch((error) => console.error('Error fetching monthly purchases:', error));
+    }, []);
+
+    // Payment Status split - reuses the online/cash/pending totals already fetched above.
+    const paymentStatusData = [
+        { id: 0, value: onlineData.totalRevenue || 0, label: 'Online' },
+        { id: 1, value: cashData.totalRevenue || 0, label: 'Cash' },
+        { id: 2, value: pendingData.totalRevenue || 0, label: 'Pending' },
+    ].filter((entry) => entry.value > 0);
 
     return (
         <>
@@ -785,6 +839,50 @@ const Dashboard = () => {
                         </CardContent>
                     </Card>
                 </div>
+
+                <div className="col-12 col-sm-6 col-lg-3 mb-4">
+                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
+                        <CardContent>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                                <Typography variant="subtitle1" fontWeight="bold">
+                                    Total Vendors
+                                </Typography>
+                                <Users size={20} color="#888" />
+                            </Box>
+                            <Typography variant="h5" fontWeight="bold" mt={1} sx={{ color: '#29b6f6' }}>
+                                <CountUp end={totalVendorsCount || 0} duration={1.5} separator="," />
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                all vendor entries
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="col-12 col-sm-6 col-lg-3 mb-4">
+                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
+                        <CardContent>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                                <Typography variant="subtitle1" fontWeight="bold">
+                                    Total Profit
+                                </Typography>
+                                <Wallet size={20} color="#888" />
+                            </Box>
+                            <Typography variant="h5" fontWeight="bold" mt={1} sx={{ color: '#2e7d32' }}>
+                                ₹<CountUp end={profitData.totalProfit || 0} duration={1.5} separator="," />
+                            </Typography>
+                            <Typography
+                                variant="body2"
+                                sx={{ color: isProfitGrowthPositive ? 'success.main' : 'error.main', display: 'flex', alignItems: 'center', gap: 0.5 }}
+                            >
+                                {isProfitGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {profitData.growthPercentage}%
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                                from last month
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
 
             <div className='row mt-3'>
@@ -830,6 +928,65 @@ const Dashboard = () => {
                     />
                 </div>
             </div>
+
+            <div className='row mt-3'>
+                <div className='col-12 col-lg-8 mb-4'>
+                    <Typography variant="h6" fontWeight="bold" mb={1}>Sales vs Purchases</Typography>
+                    <div style={{ width: '100%', overflowX: 'auto' }}>
+                        <BarChart
+                            xAxis={[{ scaleType: 'band', data: monthlySales.months.length ? monthlySales.months : monthlyPurchases.months }]}
+                            series={[
+                                { data: monthlySales.totals, label: 'Sales', color: '#4caf50' },
+                                { data: monthlyPurchases.totals, label: 'Purchases', color: '#ff7043' },
+                            ]}
+                            width={Math.max(500, monthlySales.months.length * 100)}
+                            height={320}
+                        />
+                    </div>
+                </div>
+
+                <div className='col-12 col-lg-4 mb-4'>
+                    <Typography variant="h6" fontWeight="bold" mb={1}>Payment Status</Typography>
+                    {paymentStatusData.length === 0 ? (
+                        <Typography color="text.secondary">No sales data yet.</Typography>
+                    ) : (
+                        <PieChart
+                            series={[{ data: paymentStatusData, innerRadius: 40, arcLabel: (item) => `${item.label}` }]}
+                            sx={{ [`& .${pieArcLabelClasses.root}`]: { fontWeight: 'bold', fill: '#ffffff', fontSize: 11 } }}
+                            width={320}
+                            height={280}
+                        />
+                    )}
+                </div>
+            </div>
+
+            <div className='row mt-3'>
+                <div className='col-12 mb-4'>
+                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
+                        <CardContent>
+                            <Typography variant="h6" fontWeight="bold" mb={2}>Top Selling Products</Typography>
+                            {topProducts.length === 0 ? (
+                                <Typography color="text.secondary">Not enough sales data yet to rank products.</Typography>
+                            ) : (
+                                topProducts.map((product, index) => (
+                                    <Box
+                                        key={product.productname}
+                                        display="flex"
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                        sx={{ py: 1, borderBottom: index < topProducts.length - 1 ? '1px solid #eee' : 'none' }}
+                                    >
+                                        <Typography>{index + 1}. {product.productname}</Typography>
+                                        <Typography color="text.secondary">{product.totalQty} sold &middot; ₹{product.totalRevenue}</Typography>
+                                    </Box>
+                                ))
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+
+            <AarmbhAI />
         </>
 
     )

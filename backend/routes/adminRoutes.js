@@ -6,6 +6,7 @@ const salesController = require('../controllers/salesController');
 const purchaseController = require('../controllers/purchaseController');
 const vendorController = require('../controllers/vendorController');
 const analyticsController = require('../controllers/analyticsController');
+const aiController = require('../controllers/aiController');
 
 const router = express.Router();
 
@@ -35,6 +36,7 @@ router.get('/get/vendores', vendorController.getAllVendors);
 router.post('/create/vendores', vendorController.createVendor);
 router.put('/update/vendores/:id', vendorController.updateVendor);
 router.delete('/delete/vendores/:id', vendorController.deleteVendor);
+router.get('/get/vendorsummary/:vendorname', vendorController.getVendorSummary);
 
 // Purchases
 router.post('/create/purchase', purchaseController.addPurchase);
@@ -57,5 +59,12 @@ router.get('/get/rudrax/sales/data', analyticsController.getCategorySalesPie('Ru
 router.get('/get/itemQtytotal/barcharts', analyticsController.getItemQtyBarChart);
 router.get('/get/monthlysales/charts', analyticsController.getMonthlySalesChart);
 router.get('/get/todays/sales/data', analyticsController.getTodaysSales);
+router.get('/get/totalprofit', analyticsController.getTotalProfit);
+router.get('/get/totalvendorscount', analyticsController.getTotalVendorsCount);
+router.get('/get/topsellingproducts', analyticsController.getTopSellingProducts);
+router.get('/get/monthlypurchases/charts', analyticsController.getMonthlyPurchasesChart);
+
+// AI Assistant
+router.post('/ai/ask', aiController.askAI);
 
 module.exports = router;

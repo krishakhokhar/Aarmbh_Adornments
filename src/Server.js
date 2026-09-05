@@ -41,7 +41,13 @@ const API = {
     getallRudraxdataonPiechart: `${baseUrl}/admin/get/rudrax/sales/data`,
     gettheQtydatainbarcharts : `${baseUrl}/admin/get/itemQtytotal/barcharts`,
     getMonthlysalesdata : `${baseUrl}/admin/get/monthlysales/charts`,
-    admingetTodaysRevenue : `${baseUrl}/admin/get/todays/sales/data`
+    admingetTodaysRevenue : `${baseUrl}/admin/get/todays/sales/data`,
+    getTotalProfit: `${baseUrl}/admin/get/totalprofit`,
+    getTotalVendorsCount: `${baseUrl}/admin/get/totalvendorscount`,
+    getTopSellingProducts: `${baseUrl}/admin/get/topsellingproducts`,
+    getMonthlyPurchasesData: `${baseUrl}/admin/get/monthlypurchases/charts`,
+    getVendorSummary: (vendorname) => `${baseUrl}/admin/get/vendorsummary/${encodeURIComponent(vendorname)}`,
+    askAI: `${baseUrl}/admin/ai/ask`,
 };
 
 export default API;

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
+import './Reports.css';
 import API from '../../../Server';
 import {
   PieChart, pieArcLabelClasses,
@@ -8,7 +9,46 @@ import {
   BarChart,
 } from "@mui/x-charts";
 
+import { Button, TextField, Typography } from '@mui/material';
+import { Download, Printer } from 'lucide-react';
 import axios from 'axios';
+
+const LOW_STOCK_THRESHOLD = 5;
+
+const REPORT_COLUMNS = {
+  sales: [
+    { key: 'productname', label: 'Product' },
+    { key: 'date', label: 'Date', format: (v) => new Date(v).toLocaleDateString() },
+    { key: 'customername', label: 'Customer' },
+    { key: 'qty', label: 'Qty' },
+    { key: 'productprice', label: 'Price' },
+    { key: 'total', label: 'Total' },
+    { key: 'paymentstatus', label: 'Status' },
+  ],
+  purchase: [
+    { key: 'productname', label: 'Product' },
+    { key: 'date', label: 'Date', format: (v) => new Date(v).toLocaleDateString() },
+    { key: 'productqty', label: 'Qty' },
+    { key: 'productprice', label: 'Price' },
+    { key: 'paymentmod', label: 'Payment Mode' },
+  ],
+  inventory: [
+    { key: 'sku', label: 'SKU' },
+    { key: 'itemname', label: 'Item' },
+    { key: 'itemcategory', label: 'Category' },
+    { key: 'buyingprice', label: 'Buying Price' },
+    { key: 'sellingprice', label: 'Selling Price' },
+    { key: 'itemQty', label: 'Stock' },
+  ],
+  profit: [
+    { key: 'productname', label: 'Product' },
+    { key: 'date', label: 'Date', format: (v) => new Date(v).toLocaleDateString() },
+    { key: 'qty', label: 'Qty' },
+    { key: 'productprice', label: 'Sale Price' },
+    { key: 'buyingprice', label: 'Buying Price' },
+    { key: 'profit', label: 'Profit' },
+  ],
+};
 
 const Reports = () => {
 
@@ -104,13 +144,229 @@ const Reports = () => {
       });
   }, []);
 
+  // ---- Report generator (Sales / Purchase / Inventory / Profit) ----
+  const [reportType, setReportType] = useState('sales');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [salesRows, setSalesRows] = useState([]);
+  const [purchaseRows, setPurchaseRows] = useState([]);
+  const [itemRows, setItemRows] = useState([]);
+  const [reportLoading, setReportLoading] = useState(true);
 
+  useEffect(() => {
+    setReportLoading(true);
+    Promise.all([
+      axios.get(API.getallsalesData).catch(() => ({ data: { data: [] } })),
+      axios.get(API.getAllPurchasedata).catch(() => ({ data: { data: [] } })),
+      axios.get(API.getItems).catch(() => ({ data: { data: [] } })),
+    ])
+      .then(([salesRes, purchaseRes, itemsRes]) => {
+        setSalesRows(salesRes.data.data || []);
+        setPurchaseRows(purchaseRes.data.data || []);
+        setItemRows(itemsRes.data.data || []);
+      })
+      .finally(() => setReportLoading(false));
+  }, []);
+
+  const inDateRange = (dateStr) => {
+    if (!fromDate && !toDate) return true;
+    const d = new Date(dateStr);
+    if (fromDate && d < new Date(fromDate)) return false;
+    if (toDate && d > new Date(`${toDate}T23:59:59`)) return false;
+    return true;
+  };
+
+  // Only sales made after the inventory-sync fix carry a matching item name
+  // with a known buying price - older sales fall back to a name match
+  // against current Inventory, and are excluded if that item no longer exists.
+  const buyingPriceByName = useMemo(() => {
+    const map = new Map();
+    itemRows.forEach((it) => map.set(it.itemname, it.buyingprice));
+    return map;
+  }, [itemRows]);
+
+  const reportRows = useMemo(() => {
+    if (reportType === 'sales') {
+      return salesRows.filter((s) => inDateRange(s.date));
+    }
+    if (reportType === 'purchase') {
+      return purchaseRows.filter((p) => inDateRange(p.date));
+    }
+    if (reportType === 'inventory') {
+      return itemRows;
+    }
+    if (reportType === 'profit') {
+      return salesRows
+        .filter((s) => inDateRange(s.date) && buyingPriceByName.has(s.productname))
+        .map((s) => {
+          const buyingprice = buyingPriceByName.get(s.productname);
+          return { ...s, buyingprice, profit: (s.productprice - buyingprice) * s.qty };
+        });
+    }
+    return [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportType, salesRows, purchaseRows, itemRows, fromDate, toDate, buyingPriceByName]);
+
+  const summary = useMemo(() => {
+    if (reportType === 'sales') {
+      const total = reportRows.reduce((sum, r) => sum + (r.total || 0), 0);
+      return [{ label: 'Total Sales', value: `₹${total}` }, { label: 'Records', value: reportRows.length }];
+    }
+    if (reportType === 'purchase') {
+      const total = reportRows.reduce((sum, r) => sum + (r.total ?? r.productqty * r.productprice), 0);
+      return [{ label: 'Total Purchases', value: `₹${total}` }, { label: 'Records', value: reportRows.length }];
+    }
+    if (reportType === 'inventory') {
+      const totalValue = reportRows.reduce((sum, r) => sum + r.buyingprice * r.itemQty, 0);
+      const lowStock = reportRows.filter((r) => r.itemQty <= LOW_STOCK_THRESHOLD).length;
+      return [
+        { label: 'Total Stock Value', value: `₹${totalValue}` },
+        { label: 'Low Stock Items', value: lowStock },
+        { label: 'Total Items', value: reportRows.length },
+      ];
+    }
+    if (reportType === 'profit') {
+      const totalProfit = reportRows.reduce((sum, r) => sum + r.profit, 0);
+      return [{ label: 'Total Profit', value: `₹${totalProfit}` }, { label: 'Records', value: reportRows.length }];
+    }
+    return [];
+  }, [reportType, reportRows]);
+
+  const activeColumns = REPORT_COLUMNS[reportType];
+
+  const handleExportCsv = () => {
+    const header = activeColumns.map((c) => c.label).join(',');
+    const rows = reportRows.map((row) =>
+      activeColumns
+        .map((c) => {
+          const raw = row[c.key];
+          const val = c.format ? c.format(raw) : raw;
+          return `"${String(val ?? '').replace(/"/g, '""')}"`;
+        })
+        .join(',')
+    );
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${reportType}-report-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = () => window.print();
 
   return (
     <>
-      <h1>Reports Comming Soon</h1>
+      <h1>Reports</h1>
 
-      <div className='mt-3'>
+      <div className="no-print mb-3 mt-3">
+        <div className="row g-3 align-items-end">
+          <div className="col-12 col-md-3">
+            <TextField
+              select
+              fullWidth
+              label="Report Type"
+              value={reportType}
+              onChange={(e) => setReportType(e.target.value)}
+              variant="outlined"
+              SelectProps={{ native: true }}
+            >
+              <option value="sales">Sales Report</option>
+              <option value="purchase">Purchase Report</option>
+              <option value="inventory">Inventory Report</option>
+              <option value="profit">Profit Report</option>
+            </TextField>
+          </div>
+          <div className="col-12 col-md-3">
+            <TextField
+              fullWidth
+              type="date"
+              label="From Date"
+              variant="outlined"
+              InputLabelProps={{ shrink: true }}
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              disabled={reportType === 'inventory'}
+            />
+          </div>
+          <div className="col-12 col-md-3">
+            <TextField
+              fullWidth
+              type="date"
+              label="To Date"
+              variant="outlined"
+              InputLabelProps={{ shrink: true }}
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              disabled={reportType === 'inventory'}
+            />
+          </div>
+          <div className="col-12 col-md-3 d-flex" style={{ gap: 8 }}>
+            <Button
+              variant="contained"
+              startIcon={<Download size={18} />}
+              style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
+              onClick={handleExportCsv}
+              disabled={reportRows.length === 0}
+            >
+              CSV
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Printer size={18} />}
+              style={{ textTransform: 'none' }}
+              onClick={handlePrint}
+              disabled={reportRows.length === 0}
+            >
+              Print
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="print-area">
+        <div className="d-flex flex-wrap mb-3" style={{ gap: '2rem' }}>
+          {summary.map((s) => (
+            <div key={s.label}>
+              <Typography variant="caption" color="text.secondary">{s.label}</Typography>
+              <Typography variant="h6" fontWeight="bold">{s.value}</Typography>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table table-sm table-striped" style={{ minWidth: 600 }}>
+            <thead style={{ backgroundColor: '#0d3b3d' }}>
+              <tr>
+                {activeColumns.map((c) => (
+                  <th key={c.key} style={{ color: 'white' }}>{c.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {reportLoading && (
+                <tr><td colSpan={activeColumns.length} className="text-center py-3">Loading report data...</td></tr>
+              )}
+              {!reportLoading && reportRows.length === 0 && (
+                <tr><td colSpan={activeColumns.length} className="text-center py-3 text-muted">No records found for this selection.</td></tr>
+              )}
+              {!reportLoading && reportRows.map((row, idx) => (
+                <tr key={row._id || idx}>
+                  {activeColumns.map((c) => (
+                    <td key={c.key}>{c.format ? c.format(row[c.key]) : row[c.key]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className='mt-4 no-print'>
         <div className="row">
           <div className="col-md-6 shadow-sm">
             <h4 className="p-4">Jewelry Data</h4>
@@ -155,7 +411,7 @@ const Reports = () => {
         </div>
       </div>
 
-      <div className='Row mt-4'>
+      <div className='Row mt-4 no-print'>
         <div className='col-md-12 shadow-sm mt-3 p-4'>
           <h4>Product Qty</h4>
           <div style={{ width: "100%", overflowX: "auto" }}>
@@ -169,7 +425,7 @@ const Reports = () => {
         </div>
       </div>
 
-      <div className='Row'>
+      <div className='Row no-print'>
         <div className='col-md-12 shadow-sm mt-3 p-4'>
           <h4>Monthly Sales Data</h4>
           <BarChart

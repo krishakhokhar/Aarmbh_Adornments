@@ -7,6 +7,10 @@ const purchaseSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        item: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Item',
+        },
         date: {
             type: Date,
             required: true,
@@ -19,6 +23,10 @@ const purchaseSchema = new mongoose.Schema(
         productprice: {
             type: Number,
             required: true,
+            min: 0,
+        },
+        total: {
+            type: Number,
             min: 0,
         },
         paymentmod: {

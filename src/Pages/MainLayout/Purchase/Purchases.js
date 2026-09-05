@@ -26,6 +26,7 @@ const Purchases = () => {
     const handleClose = () => setOpen(false);
     const [purchases, setPurchases] = useState([]);
     const [filteredPurchases, setFilteredPurchases] = useState([]);
+    const [items, setItems] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -48,6 +49,20 @@ const Purchases = () => {
     }, [])
 
     useEffect(() => {
+        // Product Name must reference a real inventory item so purchases can
+        // reliably update that item's stock.
+        const fetchItems = async () => {
+            try {
+                const response = await axios.get(API.getItems);
+                setItems(response.data.data || []);
+            } catch (error) {
+                console.error('Failed to fetch items:', error);
+            }
+        };
+        fetchItems();
+    }, [])
+
+    useEffect(() => {
         const filtered = purchases.filter(purchase =>
             purchase.productname?.toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -60,6 +75,7 @@ const Purchases = () => {
         { id: 'date', label: 'Date' },
         { id: 'productqty', label: 'Quantity' },
         { id: 'productprice', label: 'Price', align: 'right' },
+        { id: 'total', label: 'Total', align: 'right' },
         { id: 'paymentmod', label: 'Payment Mode', align: 'center' },
         { id: 'actions', label: 'Actions', align: 'center' },
     ];
@@ -68,6 +84,22 @@ const Purchases = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const qtyNum = Number(formData.productqty);
+        const priceNum = Number(formData.productprice);
+
+        if (!formData.productname || !formData.date || !formData.paymentmod) {
+            Swal.fire({ icon: 'error', title: 'Missing fields', text: 'Please fill all required fields!' });
+            return;
+        }
+        if (!Number.isFinite(qtyNum) || qtyNum < 1) {
+            Swal.fire({ icon: 'error', title: 'Invalid quantity', text: 'Quantity must be greater than 0.' });
+            return;
+        }
+        if (!Number.isFinite(priceNum) || priceNum < 0) {
+            Swal.fire({ icon: 'error', title: 'Invalid price', text: 'Price cannot be negative.' });
+            return;
+        }
 
         try {
             const response = await axios.post(API.createpurchasedata, formData);
@@ -229,12 +261,21 @@ const Purchases = () => {
                                     <div className="col-12">
                                         <TextField
                                             fullWidth
-                                            label="Product Name"
+                                            select
+                                            label="Select Product"
                                             name="productname"
                                             value={formData.productname}
                                             onChange={handleInputChange}
                                             variant="outlined"
-                                        />
+                                            SelectProps={{ native: true }}
+                                        >
+                                            <option value="">Select Product</option>
+                                            {items.map((item) => (
+                                                <option key={item._id} value={item.itemname}>
+                                                    {item.itemname}
+                                                </option>
+                                            ))}
+                                        </TextField>
                                     </div>
                                     <div className="col-12">
                                         <TextField
@@ -259,6 +300,8 @@ const Purchases = () => {
                                             onChange={handleInputChange}
                                             variant="outlined"
                                             type="number"
+                                            inputProps={{ min: 1 }}
+                                            onWheel={(e) => e.target.blur()}
                                         />
                                     </div>
                                     <div className="col-12 col-md-6">
@@ -270,6 +313,8 @@ const Purchases = () => {
                                             onChange={handleInputChange}
                                             variant="outlined"
                                             type="number"
+                                            inputProps={{ min: 0 }}
+                                            onWheel={(e) => e.target.blur()}
                                         />
                                     </div>
                                     <div className="col-12">
@@ -329,6 +374,13 @@ const Purchases = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
+                                    {filteredPurchases.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={purchaseColumns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                {purchases.length === 0 ? 'No purchases recorded yet. Click "New Purchases" to add one.' : 'No purchases match your search.'}
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                     {filteredPurchases
                                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                         .map((purchase) => (
@@ -337,6 +389,7 @@ const Purchases = () => {
                                                 <TableCell>{new Date(purchase.date).toLocaleDateString()}</TableCell>
                                                 <TableCell>{purchase.productqty}</TableCell>
                                                 <TableCell align="right">₹{purchase.productprice}</TableCell>
+                                                <TableCell align="right">₹{purchase.total ?? purchase.productqty * purchase.productprice}</TableCell>
                                                 <TableCell align="center">
                                                     <span
                                                         style={{

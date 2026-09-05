@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, TextField, InputAdornment, Box, Modal, Fade, Typography } from '@mui/material';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, History } from 'lucide-react';
 import Backdrop from '@mui/material/Backdrop';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -35,6 +35,24 @@ const Vendors = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [summaryOpen, setSummaryOpen] = useState(false);
+    const [summaryLoading, setSummaryLoading] = useState(false);
+    const [summaryData, setSummaryData] = useState(null);
+
+    const handleViewSummary = async (vendorname) => {
+        setSummaryOpen(true);
+        setSummaryLoading(true);
+        try {
+            const response = await axios.get(API.getVendorSummary(vendorname));
+            setSummaryData(response.data.data);
+        } catch (error) {
+            console.error('Failed to fetch vendor summary:', error);
+            Swal.fire('Error', 'Failed to load vendor purchase history.', 'error');
+            setSummaryOpen(false);
+        } finally {
+            setSummaryLoading(false);
+        }
+    };
 
     const handleOpen = () => {
         setEditMode(false);
@@ -348,6 +366,13 @@ const Vendors = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
+                                    {filterVendors().length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                {vendors.length === 0 ? 'No vendors added yet. Click "Add Vendors" to get started.' : 'No vendors match your search.'}
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                     {filterVendors()
                                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                         .map((vendor) => (
@@ -398,6 +423,15 @@ const Vendors = () => {
                                                     <Button
                                                         size="small"
                                                         variant="outlined"
+                                                        onClick={() => handleViewSummary(vendor.vendorname)}
+                                                        style={{ marginRight: 8 }}
+                                                        title="View purchase history"
+                                                    >
+                                                        <History size={16} />
+                                                    </Button>
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
                                                         onClick={() => handleEdit(vendor._id)}
                                                         style={{ marginRight: 8 }}
                                                     >
@@ -433,6 +467,67 @@ const Vendors = () => {
                     />
                 </Paper>
             </div>
+
+            {/* Vendor purchase history / summary */}
+            <Modal open={summaryOpen} onClose={() => setSummaryOpen(false)} closeAfterTransition slots={{ backdrop: Backdrop }} slotProps={{ backdrop: { timeout: 500 } }}>
+                <Fade in={summaryOpen}>
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: { xs: '90%', sm: '80%', md: 650 },
+                            maxHeight: '85vh',
+                            overflowY: 'auto',
+                            bgcolor: 'background.paper',
+                            borderRadius: 3,
+                            boxShadow: 24,
+                            p: { xs: 2, md: 4 },
+                            outline: 'none',
+                        }}
+                    >
+                        {summaryLoading && <Typography textAlign="center">Loading purchase history...</Typography>}
+                        {!summaryLoading && summaryData && (
+                            <>
+                                <Typography variant="h5" mb={1} fontWeight="bold">
+                                    {summaryData.vendorname}
+                                </Typography>
+                                <Typography variant="body1" mb={2}>
+                                    Total Purchase Amount: <strong>₹{summaryData.totalPurchaseAmount}</strong>
+                                    {' · '}
+                                    Pending Payment: <strong style={{ color: '#ff9800' }}>₹{summaryData.pendingPayment}</strong>
+                                </Typography>
+                                <Table size="small">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Order Date</TableCell>
+                                            <TableCell>Product</TableCell>
+                                            <TableCell align="right">Order Total</TableCell>
+                                            <TableCell align="center">Payment Status</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {summaryData.entries.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={4} align="center" sx={{ color: 'text.secondary' }}>No order history found.</TableCell>
+                                            </TableRow>
+                                        )}
+                                        {summaryData.entries.map((entry) => (
+                                            <TableRow key={entry._id}>
+                                                <TableCell>{entry.orderdate ? new Date(entry.orderdate).toLocaleDateString() : '-'}</TableCell>
+                                                <TableCell>{entry.product}</TableCell>
+                                                <TableCell align="right">₹{entry.ordertotal}</TableCell>
+                                                <TableCell align="center">{entry.paymentstatus}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </>
+                        )}
+                    </Box>
+                </Fade>
+            </Modal>
         </>
     );
 };

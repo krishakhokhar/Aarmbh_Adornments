@@ -31,7 +31,7 @@ const Sales = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = React.useState(false);
-    const [itemNames, setItemNames] = useState([]);
+    const [items, setItems] = useState([]);
     const [formData, setFormData] = useState({
         productname: '',
         date: '',
@@ -66,18 +66,20 @@ const Sales = () => {
 
 
     useEffect(() => {
-        // Fetch all product names
-        const fetchItemNames = async () => {
-
+        // Fetch full item records (not just names) so we know each item's
+        // current stock for client-side validation and display.
+        const fetchItems = async () => {
             try {
-                const response = await axios.get(API.getAllitemsname);
-                setItemNames(response.data.data.reverse());
+                const response = await axios.get(API.getItems);
+                setItems((response.data.data || []).reverse());
             } catch (error) {
-                console.error('Failed to fetch item names:', error);
+                console.error('Failed to fetch items:', error);
             }
         };
-        fetchItemNames();
+        fetchItems();
     }, []);
+
+    const selectedItem = items.find((item) => item.itemname === formData.productname);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -92,6 +94,31 @@ const Sales = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const qtyNum = Number(formData.qty);
+        const priceNum = Number(formData.productprice);
+
+        if (!formData.productname || !formData.date || !formData.customername || !formData.category || !formData.paymentstatus) {
+            Swal.fire({ icon: 'error', title: 'Missing fields', text: 'Please fill all required fields!' });
+            return;
+        }
+        if (!Number.isFinite(qtyNum) || qtyNum < 1) {
+            Swal.fire({ icon: 'error', title: 'Invalid quantity', text: 'Quantity must be at least 1.' });
+            return;
+        }
+        if (!Number.isFinite(priceNum) || priceNum < 0) {
+            Swal.fire({ icon: 'error', title: 'Invalid price', text: 'Product price cannot be negative.' });
+            return;
+        }
+        if (!isEditing && selectedItem && qtyNum > selectedItem.itemQty) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Not enough stock',
+                text: `Only ${selectedItem.itemQty} unit(s) of ${selectedItem.itemname} available.`,
+            });
+            return;
+        }
+
         try {
             if (isEditing) {
                 // Update sale
@@ -325,9 +352,9 @@ const Sales = () => {
                                                 SelectProps={{ native: true }}
                                             >
                                                 <option value="">Select Product</option>
-                                                {itemNames.map((item, index) => (
-                                                    <option key={index} value={item}>
-                                                        {item}
+                                                {items.map((item) => (
+                                                    <option key={item._id} value={item.itemname}>
+                                                        {item.itemname}
                                                     </option>
                                                 ))}
                                             </TextField>
@@ -384,9 +411,12 @@ const Sales = () => {
                                                 label="Quantity"
                                                 name="qty"
                                                 type="number"
+                                                inputProps={{ min: 1 }}
+                                                onWheel={(e) => e.target.blur()}
                                                 value={formData.qty}
                                                 onChange={handleChange}
                                                 variant="outlined"
+                                                helperText={selectedItem ? `Available stock: ${selectedItem.itemQty}` : ' '}
                                             />
                                         </div>
 
@@ -397,6 +427,8 @@ const Sales = () => {
                                                 label="Product Price"
                                                 name="productprice"
                                                 type="number"
+                                                inputProps={{ min: 0 }}
+                                                onWheel={(e) => e.target.blur()}
                                                 value={formData.productprice}
                                                 onChange={handleChange}
                                                 variant="outlined"
@@ -484,6 +516,13 @@ const Sales = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
+                                    {filterSalesData().length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                {salesData.length === 0 ? 'No sales recorded yet. Click "New Sales" to add one.' : 'No sales match your search.'}
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                     {filterSalesData()  // Use filtered sales data here
                                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                         .map((sale, index) => (

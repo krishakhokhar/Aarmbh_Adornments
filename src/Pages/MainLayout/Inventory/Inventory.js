@@ -18,6 +18,14 @@ import TableRow from '@mui/material/TableRow';
 import API from '../../../Server';
 import Loader from '../../Loader/Loader';
 
+const LOW_STOCK_THRESHOLD = 5;
+
+const getStockStatus = (item) => {
+    if (item.itemQty === 0) return 'Out Of Stock';
+    if (item.itemQty <= LOW_STOCK_THRESHOLD) return 'Low Stock';
+    return 'In Stock';
+};
+
 const Inventory = () => {
     const [value, setValue] = React.useState(0);
     const [open, setOpen] = React.useState(false);
@@ -39,6 +47,8 @@ const Inventory = () => {
     const [items, setItems] = React.useState([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [initialLoading, setInitialLoading] = React.useState(true);
+    const [sortConfig, setSortConfig] = React.useState({ key: null, direction: 'asc' });
 
     React.useEffect(() => {
 
@@ -57,8 +67,16 @@ const Inventory = () => {
                     text: 'Failed to fetch items!',
                     showConfirmButton: true,
                 });
-            });
+            })
+            .finally(() => setInitialLoading(false));
     }, []);
+
+    const handleSort = (key) => {
+        setSortConfig((prev) => ({
+            key,
+            direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
+        }));
+    };
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -114,6 +132,24 @@ const Inventory = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const buyingNum = Number(formData.buyingprice);
+        const sellingNum = Number(formData.sellingprice);
+        const qtyNum = Number(formData.itemQty);
+
+        if (!formData.itemname || !formData.itemcategory) {
+            Swal.fire({ icon: 'error', title: 'Missing fields', text: 'Please fill all required fields!' });
+            return;
+        }
+        if (!Number.isFinite(buyingNum) || buyingNum < 0 || !Number.isFinite(sellingNum) || sellingNum < 0) {
+            Swal.fire({ icon: 'error', title: 'Invalid price', text: 'Prices cannot be negative.' });
+            return;
+        }
+        if (!Number.isFinite(qtyNum) || qtyNum < 0) {
+            Swal.fire({ icon: 'error', title: 'Invalid quantity', text: 'Quantity cannot be negative.' });
+            return;
+        }
+
         try {
             if (isEditMode) {
                 // Update API
@@ -258,31 +294,54 @@ const Inventory = () => {
     };
 
     const columns = [
-        { id: 'itemname', label: 'Item Name', minWidth: 170 },
+        { id: 'sku', label: 'SKU', minWidth: 110 },
+        { id: 'itemname', label: 'Item Name', minWidth: 170, sortable: true },
         { id: 'itemcategory', label: 'Category', minWidth: 100 },
-        { id: 'buyingprice', label: 'Buying Price', minWidth: 170, align: 'right' },
-        { id: 'sellingprice', label: 'Selling Price', minWidth: 170, align: 'right' },
-        { id: 'itemQty', label: 'Quantity', minWidth: 170, align: 'right' },
-        { id: 'status', label: 'Status', minWidth: 170, align: 'right' },
-        { id: 'actions', label: 'Actions', minWidth: 170, align: 'center' },
+        { id: 'buyingprice', label: 'Buying Price', minWidth: 130, align: 'right', sortable: true },
+        { id: 'sellingprice', label: 'Selling Price', minWidth: 130, align: 'right', sortable: true },
+        { id: 'itemQty', label: 'Quantity', minWidth: 110, align: 'right', sortable: true },
+        { id: 'stockValue', label: 'Stock Value', minWidth: 130, align: 'right', sortable: true },
+        { id: 'profit', label: 'Profit/Item', minWidth: 120, align: 'right', sortable: true },
+        { id: 'status', label: 'Status', minWidth: 130, align: 'right' },
+        { id: 'actions', label: 'Actions', minWidth: 130, align: 'center' },
     ];
 
-    // Filter logic based on active tab
+    // Filter logic based on active tab - the "Low Stock" tab and the status
+    // badge now both derive from the same live getStockStatus() computation,
+    // so they can never disagree with each other.
     const filteredItems = items.filter((item) => {
-        // Tab filter
         const tabFilter =
             value === 0 ||
             (value === 1 && item.itemcategory === 'Jewelry') ||
             (value === 2 && item.itemcategory === 'Rudrax') ||
-            (value === 3 && item.status === 'Low Stock');
+            (value === 3 && getStockStatus(item) === 'Low Stock');
 
-        // Search filter
         const searchFilter =
             item.itemname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.itemcategory.toLowerCase().includes(searchTerm.toLowerCase());
+            item.itemcategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (item.sku || '').toLowerCase().includes(searchTerm.toLowerCase());
 
         return tabFilter && searchFilter;
     });
+
+    const sortedItems = React.useMemo(() => {
+        if (!sortConfig.key) return filteredItems;
+        const withComputed = filteredItems.map((item) => ({
+            ...item,
+            stockValue: item.buyingprice * item.itemQty,
+            profit: item.sellingprice - item.buyingprice,
+        }));
+        withComputed.sort((a, b) => {
+            const aVal = a[sortConfig.key];
+            const bVal = b[sortConfig.key];
+            if (typeof aVal === 'string') {
+                return sortConfig.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            }
+            return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
+        });
+        return withComputed;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filteredItems, sortConfig]);
 
 
     return (
@@ -435,6 +494,8 @@ const Inventory = () => {
                                             onChange={handleInputChange}
                                             variant="outlined"
                                             type="number"
+                                            inputProps={{ min: 0 }}
+                                            onWheel={(e) => e.target.blur()}
                                         />
                                     </div>
                                     <div className="col-12 col-md-6">
@@ -446,6 +507,8 @@ const Inventory = () => {
                                             onChange={handleInputChange}
                                             variant="outlined"
                                             type="number"
+                                            inputProps={{ min: 0 }}
+                                            onWheel={(e) => e.target.blur()}
                                         />
                                     </div>
                                     <div className="col-12 col-md-6">
@@ -457,6 +520,8 @@ const Inventory = () => {
                                             onChange={handleInputChange}
                                             variant="outlined"
                                             type="number"
+                                            inputProps={{ min: 0 }}
+                                            onWheel={(e) => e.target.blur()}
                                         />
                                     </div>
                                     <div className="col-12 col-md-6">
@@ -514,104 +579,108 @@ const Inventory = () => {
                                             <TableCell
                                                 key={column.id}
                                                 align={column.align || 'left'}
+                                                onClick={column.sortable ? () => handleSort(column.id) : undefined}
                                                 sx={{
                                                     minWidth: column.minWidth,
                                                     fontWeight: 'bold',
                                                     color: 'white',
                                                     bgcolor: '#0d3b3d',
                                                     borderBottom: '1px solid #ccc',
+                                                    cursor: column.sortable ? 'pointer' : 'default',
+                                                    userSelect: 'none',
                                                 }}
                                             >
                                                 {column.label}
+                                                {column.sortable && sortConfig.key === column.id && (sortConfig.direction === 'asc' ? ' ▲' : ' ▼')}
                                             </TableCell>
                                         ))}
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {filteredItems
+                                    {initialLoading && (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} align="center" sx={{ py: 4 }}>
+                                                Loading inventory...
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+
+                                    {!initialLoading && sortedItems.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+                                                {items.length === 0 ? 'No items in inventory yet. Click "Add Items" to get started.' : 'No items match your search/filter.'}
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+
+                                    {!initialLoading && sortedItems
                                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                        .map((item, index) => (
-                                            <TableRow
-                                                hover
-                                                role="checkbox"
-                                                tabIndex={-1}
-                                                key={item._id}
-                                                sx={{
-                                                    backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white',
-                                                    '&:hover': { backgroundColor: '#e0f7fa' },
-                                                }}
-                                            >
-                                                <TableCell>{item.itemname}</TableCell>
-                                                <TableCell>{item.itemcategory}</TableCell>
-                                                <TableCell align="right">{item.buyingprice}</TableCell>
-                                                <TableCell align="right">{item.sellingprice}</TableCell>
-                                                <TableCell align="right">{item.itemQty}</TableCell>
-                                                {/* <TableCell align="right">
-                                                    <span
-                                                        style={{
-                                                            backgroundColor:
-                                                                item.status === 'In Stock'
-                                                                    ? '#4caf50'
-                                                                    : item.status === 'Low Stock'
-                                                                        ? '#ff9800'
-                                                                        : '#f44336',
-                                                            color: 'white',
-                                                            padding: '4px 12px',
-                                                            borderRadius: '12px',
-                                                            fontWeight: 'bold',
-                                                            minWidth: '90px',
-                                                            textAlign: 'center',
-                                                        }}
-                                                    >
-                                                        {item.status}
-                                                    </span>
-                                                </TableCell> */}
+                                        .map((item, index) => {
+                                            const stockStatus = getStockStatus(item);
+                                            const stockValue = item.buyingprice * item.itemQty;
+                                            const profit = item.sellingprice - item.buyingprice;
+                                            return (
+                                                <TableRow
+                                                    hover
+                                                    role="checkbox"
+                                                    tabIndex={-1}
+                                                    key={item._id}
+                                                    sx={{
+                                                        backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white',
+                                                        '&:hover': { backgroundColor: '#e0f7fa' },
+                                                    }}
+                                                >
+                                                    <TableCell>{item.sku || '-'}</TableCell>
+                                                    <TableCell>{item.itemname}</TableCell>
+                                                    <TableCell>{item.itemcategory}</TableCell>
+                                                    <TableCell align="right">₹{item.buyingprice}</TableCell>
+                                                    <TableCell align="right">₹{item.sellingprice}</TableCell>
+                                                    <TableCell align="right">{item.itemQty}</TableCell>
+                                                    <TableCell align="right">₹{stockValue}</TableCell>
+                                                    <TableCell align="right">₹{profit}</TableCell>
 
-                                                <TableCell align="right">
-                                                    <span
-                                                        style={{
-                                                            backgroundColor:
-                                                                item.itemQty === 0
-                                                                    ? '#f44336' // Out of Stock (red)
-                                                                    : item.itemQty <= 2
-                                                                        ? '#ff9800' // Low Stock (orange)
-                                                                        : '#4caf50', // In Stock (green)
-                                                            color: 'white',
-                                                            padding: '4px 12px',
-                                                            borderRadius: '12px',
-                                                            fontWeight: 'bold',
-                                                            minWidth: '90px',
-                                                            textAlign: 'center',
-                                                        }}
-                                                    >
-                                                        {item.itemQty === 0
-                                                            ? 'Out of Stock'
-                                                            : item.itemQty <= 2
-                                                                ? 'Low Stock'
-                                                                : 'In Stock'}
-                                                    </span>
-                                                </TableCell>
+                                                    <TableCell align="right">
+                                                        <span
+                                                            style={{
+                                                                backgroundColor:
+                                                                    stockStatus === 'Out Of Stock'
+                                                                        ? '#f44336'
+                                                                        : stockStatus === 'Low Stock'
+                                                                            ? '#ff9800'
+                                                                            : '#4caf50',
+                                                                color: 'white',
+                                                                padding: '4px 12px',
+                                                                borderRadius: '12px',
+                                                                fontWeight: 'bold',
+                                                                minWidth: '90px',
+                                                                textAlign: 'center',
+                                                                display: 'inline-block',
+                                                            }}
+                                                        >
+                                                            {stockStatus}
+                                                        </span>
+                                                    </TableCell>
 
-
-                                                <TableCell align="center">
-                                                    <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        size="small"
-                                                        startIcon={<Pencil size={16} />}
-                                                        sx={{ mr: 1 }}
-                                                        onClick={() => handleEdit(item)}
-                                                    />
-                                                    <Button
-                                                        variant="contained"
-                                                        color="error"
-                                                        size="small"
-                                                        startIcon={<Trash2 size={16} />}
-                                                        onClick={() => handleDelete(item._id)}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                                    <TableCell align="center">
+                                                        <Button
+                                                            variant="contained"
+                                                            color="primary"
+                                                            size="small"
+                                                            startIcon={<Pencil size={16} />}
+                                                            sx={{ mr: 1 }}
+                                                            onClick={() => handleEdit(item)}
+                                                        />
+                                                        <Button
+                                                            variant="contained"
+                                                            color="error"
+                                                            size="small"
+                                                            startIcon={<Trash2 size={16} />}
+                                                            onClick={() => handleDelete(item._id)}
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                 </TableBody>
                             </Table>
                         </TableContainer>
@@ -621,7 +690,7 @@ const Inventory = () => {
                     <TablePagination
                         rowsPerPageOptions={[10, 25, 100]}
                         component="div"
-                        count={filteredItems.length}
+                        count={sortedItems.length}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onPageChange={handleChangePage}

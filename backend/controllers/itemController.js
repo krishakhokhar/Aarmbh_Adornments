@@ -13,6 +13,12 @@ exports.addItem = asyncHandler(async (req, res) => {
     }
 
     const item = await Item.create({ itemname, itemcategory, buyingprice, sellingprice, itemQty, status });
+
+    // Auto-generate a short, unique SKU from the item's own id - no manual entry needed.
+    const prefix = itemcategory === 'Rudrax' ? 'RUD' : 'JWL';
+    item.sku = `${prefix}-${item._id.toString().slice(-6).toUpperCase()}`;
+    await item.save();
+
     res.status(201).json({ message: 'Item created successfully!', data: item });
 });
 

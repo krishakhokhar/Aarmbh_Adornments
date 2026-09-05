@@ -7,6 +7,12 @@ const itemSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        sku: {
+            type: String,
+            trim: true,
+            unique: true,
+            sparse: true,
+        },
         itemcategory: {
             type: String,
             required: true,

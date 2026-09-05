@@ -7,6 +7,10 @@ const saleSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        item: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Item',
+        },
         date: {
             type: Date,
             required: true,

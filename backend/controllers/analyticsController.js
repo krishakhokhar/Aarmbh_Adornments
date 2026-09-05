@@ -176,6 +176,78 @@ exports.getMonthlySalesChart = asyncHandler(async (req, res) => {
     res.status(200).json({ data: results });
 });
 
+// Total profit = sum of (sale price - item's buying price) x qty, joined via
+// Sale.item. Only sales made after the inventory-sync fix have that
+// reference, so older sales are excluded rather than guessed at.
+async function sumProfit(dateFilter = {}) {
+    const result = await Sale.aggregate([
+        { $match: { item: { $ne: null }, ...dateFilter } },
+        {
+            $lookup: {
+                from: 'items',
+                localField: 'item',
+                foreignField: '_id',
+                as: 'itemDoc',
+            },
+        },
+        { $unwind: '$itemDoc' },
+        {
+            $group: {
+                _id: null,
+                totalProfit: {
+                    $sum: { $multiply: [{ $subtract: ['$productprice', '$itemDoc.buyingprice'] }, '$qty'] },
+                },
+            },
+        },
+    ]);
+    return result[0]?.totalProfit || 0;
+}
+
+exports.getTotalProfit = asyncHandler(async (req, res) => {
+    const { start: curStart, end: curEnd } = getMonthRange(0);
+    const { start: prevStart, end: prevEnd } = getMonthRange(-1);
+    const current = await sumProfit({ date: { $gte: curStart, $lt: curEnd } });
+    const previous = await sumProfit({ date: { $gte: prevStart, $lt: prevEnd } });
+    res.status(200).json({ totalProfit: current, growthPercentage: computeGrowth(current, previous) });
+});
+
+exports.getTotalVendorsCount = asyncHandler(async (req, res) => {
+    const totalVendors = await Vendor.countDocuments({});
+    res.status(200).json({ totalVendors });
+});
+
+exports.getTopSellingProducts = asyncHandler(async (req, res) => {
+    const results = await Sale.aggregate([
+        { $group: { _id: '$productname', totalQty: { $sum: '$qty' }, totalRevenue: { $sum: '$total' } } },
+        { $sort: { totalQty: -1 } },
+        { $limit: 5 },
+    ]);
+    res.status(200).json({
+        data: results.map((r) => ({ productname: r._id, totalQty: r.totalQty, totalRevenue: r.totalRevenue })),
+    });
+});
+
+exports.getMonthlyPurchasesChart = asyncHandler(async (req, res) => {
+    const MONTHS_TO_SHOW = 6;
+    const now = new Date();
+    const results = [];
+
+    for (let i = MONTHS_TO_SHOW - 1; i >= 0; i -= 1) {
+        const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        const agg = await Purchase.aggregate([ // eslint-disable-line no-await-in-loop
+            { $match: { date: { $gte: start, $lt: end } } },
+            { $group: { _id: null, total: { $sum: { $multiply: ['$productqty', '$productprice'] } } } },
+        ]);
+        results.push({
+            month: start.toLocaleString('default', { month: 'short', year: 'numeric' }),
+            totalPurchases: agg[0]?.total || 0,
+        });
+    }
+
+    res.status(200).json({ data: results });
+});
+
 exports.getTodaysSales = asyncHandler(async (req, res) => {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
