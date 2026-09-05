@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, Typography, Box } from '@mui/material';
-import { DollarSign, ShoppingBag, PackageOpen, EthernetPort, HandCoins, ScrollText, Users, ChartNoAxesCombined, ChartCandlestick, Clock, Wallet } from 'lucide-react';
+import { DollarSign, ShoppingBag, PackageOpen, EthernetPort, HandCoins, ScrollText, Users, Clock, Wallet, TrendingUp } from 'lucide-react';
 import axios from 'axios';
-import CountUp from 'react-countup';
 import API from '../../../Server';
 import { PieChart, pieArcLabelClasses } from '@mui/x-charts/PieChart';
 import { BarChart } from '@mui/x-charts/BarChart';
 import AarmbhAI from './AarmbhAI';
+import StatCard from '../../../components/ui/StatCard';
 
 const Dashboard = () => {
     // total Revenue
@@ -25,8 +25,6 @@ const Dashboard = () => {
             });
     }, []);
 
-    const isPositive = data.growthPercentage >= 0;
-
     // sales Data
 
     const [salesData, setSalesData] = useState({
@@ -44,8 +42,6 @@ const Dashboard = () => {
             });
     }, []);
 
-    const isSalesGrowthPositive = salesData.growthPercentage >= 0;
-
     // online Payment Data
     const [onlineData, setOnlineData] = useState({
         totalRevenue: 0,
@@ -61,8 +57,6 @@ const Dashboard = () => {
                 console.error("Error fetching online payment data:", error);
             });
     }, []);
-
-    const isOnlineGrowthPositive = onlineData.growthPercentage >= 0;
 
     // cash Data
 
@@ -81,8 +75,6 @@ const Dashboard = () => {
             });
     }, []);
 
-    const isCashGrowthPositive = cashData.growthPercentage >= 0;
-
     // pending data
 
     const [pendingData, setPendingData] = useState({
@@ -100,8 +92,6 @@ const Dashboard = () => {
             });
     }, []);
 
-    const isPendingGrowthPositive = pendingData.growthPercentage >= 0;
-
     // inventory data
 
     const [inventoryData, setInventoryData] = useState({
@@ -112,15 +102,12 @@ const Dashboard = () => {
     useEffect(() => {
         axios.get(API.getinventorydata)
             .then(response => {
-                console.log("Inventory API data:", response.data);
                 setInventoryData(response.data);
             })
             .catch(error => {
                 console.error("Error fetching inventory data:", error);
             });
     }, []);
-
-    const isInventoryGrowthPositive = inventoryData.growthPercentage >= 0;
 
     // get all purchase data
     const [purchaseData, setPurchaseData] = useState({
@@ -137,8 +124,6 @@ const Dashboard = () => {
                 console.error("Error fetching total purchase data:", error);
             });
     }, []);
-
-    const isPurchaseGrowthPositive = purchaseData.growthPercentage >= 0;
 
     // get all vendores
 
@@ -157,8 +142,6 @@ const Dashboard = () => {
             });
     }, []);
 
-    const isVendorGrowthPositive = vendorData.growthPercentage >= 0;
-
     // vendore total
 
     const [vendorPaymentData, setVendorPaymentData] = useState({
@@ -176,8 +159,6 @@ const Dashboard = () => {
             });
     }, []);
 
-    const isGrowthPositive = vendorPaymentData.growthPercentage >= 0;
-
     // pending vendores payment
 
     const [pendingVendorData, setPendingVendorData] = useState({
@@ -194,8 +175,6 @@ const Dashboard = () => {
                 console.error("Error fetching pending vendor payments:", error);
             });
     }, []);
-
-    const isPendingGrowthPositive1 = pendingVendorData.growthPercentage >= 0;
 
     // Pie Chart jwelery
     const [pieData, setPieData] = useState([]);
@@ -222,8 +201,8 @@ const Dashboard = () => {
     }, []);
 
     const size = {
-        width: 500,
-        height: 400,
+        width: 320,
+        height: 300,
     };
 
     // Rudrax data on pie
@@ -251,8 +230,8 @@ const Dashboard = () => {
     }, []);
 
     const chartSize = {
-        width: 500,
-        height: 400,
+        width: 320,
+        height: 300,
     };
 
     const [TodaysalesData, setTodaySalesData] = useState({
@@ -260,8 +239,6 @@ const Dashboard = () => {
         growthPercentage: 0,
         count: 0,
     });
-
-    const TodayisPositive = salesData.growthPercentage >= 0;
 
     useEffect(() => {
         axios.get(API.admingetTodaysRevenue)
@@ -281,7 +258,6 @@ const Dashboard = () => {
             .then((response) => setProfitData(response.data))
             .catch((error) => console.error('Error fetching profit data:', error));
     }, []);
-    const isProfitGrowthPositive = profitData.growthPercentage >= 0;
 
     // Total Vendors (all, not just active)
     const [totalVendorsCount, setTotalVendorsCount] = useState(0);
@@ -327,646 +303,166 @@ const Dashboard = () => {
         { id: 2, value: pendingData.totalRevenue || 0, label: 'Pending' },
     ].filter((entry) => entry.value > 0);
 
+    const email = (typeof window !== 'undefined' && localStorage.getItem('email')) || '';
+    const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
     return (
         <>
-            <div>
-                <h1>Dashboard</h1>
-            </div>
+            <Box
+                sx={{
+                    background: 'linear-gradient(120deg, #0d3b3d 0%, #12494b 100%)',
+                    color: '#fff',
+                    borderRadius: 'var(--aarmbh-radius-lg)',
+                    p: { xs: 2.5, md: 3.5 },
+                    mb: 3,
+                }}
+            >
+                <Typography variant="h5" fontWeight={700}>Welcome back{email ? `, ${email.split('@')[0]}` : ''}</Typography>
+                <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.5 }}>
+                    Here's what's happening with your jewelry business today &middot; {today}
+                </Typography>
+            </Box>
+
             <div className='row'>
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Total Revenue
-                                </Typography>
-                                <DollarSign size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#4caf50' }} // Light green
-                            >
-                                {/* ₹{data.totalRevenue.toLocaleString()} */}
-                                ₹<CountUp
-                                    end={data.totalRevenue || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {data.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={DollarSign} label="Total Revenue" value={data.totalRevenue} prefix="₹" growthPercentage={data.growthPercentage} accent="#0d3b3d" />
                 </div>
-
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Today's Total Revenue
-                                </Typography>
-                                <DollarSign size={20} color="#888" />
-                            </Box>
-
-                            <Typography variant="h5" fontWeight="bold" mt={1} sx={{ color: '#4caf50' }}>
-                                ₹<CountUp end={TodaysalesData.totalAmount} duration={1.5} separator="," />
-                            </Typography>
-
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: TodayisPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {TodayisPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />}
-                                {TodaysalesData.growthPercentage}%
-                            </Typography>
-
-                            <Typography variant="caption" color="text.secondary">
-                                from yesterday
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={DollarSign} label="Today's Revenue" value={TodaysalesData.totalAmount} prefix="₹" growthPercentage={TodaysalesData.growthPercentage} accent="#b8923a" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Total Sales
-                                </Typography>
-                                <ShoppingBag size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#4caf50' }} // Light green
-                            >
-                                {/* ₹{salesData.totalRevenue.toLocaleString()} */}
-                                ₹<CountUp
-                                    end={salesData.totalRevenue || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isSalesGrowthPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isSalesGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {salesData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={ShoppingBag} label="Total Sales" value={salesData.totalRevenue} prefix="₹" growthPercentage={salesData.growthPercentage} accent="#1a5fa8" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Inventory Value
-                                </Typography>
-                                <PackageOpen size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#3f51b5' }} // Indigo color
-                            >
-                                {/* ₹{inventoryData.totalRevenue.toLocaleString()} */}
-                                ₹<CountUp
-                                    end={inventoryData.totalBuyingPrice || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isInventoryGrowthPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isInventoryGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {inventoryData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={PackageOpen} label="Inventory Value" value={inventoryData.totalBuyingPrice} prefix="₹" growthPercentage={inventoryData.growthPercentage} accent="#5a4fcf" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Online Payment In Sales
-                                </Typography>
-                                <EthernetPort size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#1976d2' }} // Custom blue color
-                            >
-                                {/* ₹{onlineData.totalRevenue.toLocaleString()} */}
-                                ₹<CountUp
-                                    end={onlineData.totalRevenue || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isOnlineGrowthPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isOnlineGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {onlineData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={EthernetPort} label="Online Payments" value={onlineData.totalRevenue} prefix="₹" growthPercentage={onlineData.growthPercentage} accent="#1976d2" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Cash Payment In Sales
-                                </Typography>
-                                <HandCoins size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#ff9800' }} // Amber / Orange color
-                            >
-                                {/* ₹{cashData.totalRevenue.toLocaleString()} */}
-                                ₹<CountUp
-                                    end={cashData.totalRevenue || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isCashGrowthPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isCashGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {cashData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={HandCoins} label="Cash Payments" value={cashData.totalRevenue} prefix="₹" growthPercentage={cashData.growthPercentage} accent="#a3660a" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Pending Payment for Sale
-                                </Typography>
-                                <Clock size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#9c27b0' }} // Purple
-                            >
-                                {/* ₹{pendingData.totalRevenue.toLocaleString()} */}
-                                ₹<CountUp
-                                    end={pendingData.totalRevenue || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isPendingGrowthPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isPendingGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {pendingData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={Clock} label="Pending Payments" value={pendingData.totalRevenue} prefix="₹" growthPercentage={pendingData.growthPercentage} accent="#9c27b0" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Total Purchase
-                                </Typography>
-                                <ScrollText size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#ff7043' }} // Deep orange
-                            >
-                                {/* ₹{purchaseData.totalPurchasePrice.toLocaleString()} */}
-                                ₹<CountUp
-                                    end={purchaseData.totalPurchasePrice || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isPurchaseGrowthPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isPurchaseGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {purchaseData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={ScrollText} label="Total Purchases" value={purchaseData.totalPurchasePrice} prefix="₹" growthPercentage={purchaseData.growthPercentage} accent="#c65b2e" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Active Vendors
-                                </Typography>
-                                <Users size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#29b6f6' }}
-                            >
-                                {/* {vendorData.totalActiveVendors.toLocaleString()} */}
-                                <CountUp
-                                    end={vendorData.totalActiveVendors || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isVendorGrowthPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isVendorGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {vendorData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={Users} label="Active Vendors" value={vendorData.totalActiveVendors} growthPercentage={vendorData.growthPercentage} accent="#0d8a7a" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Vendors Total Payment
-                                </Typography>
-                                <Users size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#a9dfbf' }} // Purple (chosen for vendor payments)
-                            >
-                                {/* ₹{(vendorPaymentData.totalPayments || 0).toLocaleString()} */}
-
-                                ₹<CountUp
-                                    end={vendorPaymentData.totalPayments || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isGrowthPositive ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {vendorPaymentData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={Users} label="Vendors Total Payment" value={vendorPaymentData.totalPayments} prefix="₹" growthPercentage={vendorPaymentData.growthPercentage} accent="#2e7d32" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            {/* Title & Icon */}
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Vendors Pending Payment
-                                </Typography>
-                                <Users size={20} color="#888" />
-                            </Box>
-
-                            {/* Value */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                mt={1}
-                                sx={{ color: '#9c27b0' }} // Orange for pending payments
-                            >
-                                {/* ₹{(pendingVendorData.totalPendingPayments || 0).toLocaleString()} */}
-                                ₹<CountUp
-                                    end={pendingVendorData.totalPendingPayments || 0}
-                                    duration={1.5}
-                                    separator=","
-                                />
-                            </Typography>
-
-                            {/* Change Indicator */}
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    color: isPendingGrowthPositive1 ? 'success.main' : 'error.main',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 0.5,
-                                }}
-                            >
-                                {isPendingGrowthPositive1 ? <ChartNoAxesCombined /> : <ChartCandlestick />} {pendingVendorData.growthPercentage}%
-                            </Typography>
-
-                            {/* Subtext */}
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={Users} label="Vendors Pending Payment" value={pendingVendorData.totalPendingPayments} prefix="₹" growthPercentage={pendingVendorData.growthPercentage} accent="#9c27b0" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Total Vendors
-                                </Typography>
-                                <Users size={20} color="#888" />
-                            </Box>
-                            <Typography variant="h5" fontWeight="bold" mt={1} sx={{ color: '#29b6f6' }}>
-                                <CountUp end={totalVendorsCount || 0} duration={1.5} separator="," />
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                                all vendor entries
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={Users} label="Total Vendors" value={totalVendorsCount} accent="#1a5fa8" helperText="all vendor entries" />
                 </div>
-
                 <div className="col-12 col-sm-6 col-lg-3 mb-4">
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
-                        <CardContent>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <Typography variant="subtitle1" fontWeight="bold">
-                                    Total Profit
-                                </Typography>
-                                <Wallet size={20} color="#888" />
-                            </Box>
-                            <Typography variant="h5" fontWeight="bold" mt={1} sx={{ color: '#2e7d32' }}>
-                                ₹<CountUp end={profitData.totalProfit || 0} duration={1.5} separator="," />
-                            </Typography>
-                            <Typography
-                                variant="body2"
-                                sx={{ color: isProfitGrowthPositive ? 'success.main' : 'error.main', display: 'flex', alignItems: 'center', gap: 0.5 }}
-                            >
-                                {isProfitGrowthPositive ? <ChartNoAxesCombined /> : <ChartCandlestick />} {profitData.growthPercentage}%
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                                from last month
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                    <StatCard icon={Wallet} label="Total Profit" value={profitData.totalProfit} prefix="₹" growthPercentage={profitData.growthPercentage} accent="#2e7d32" />
                 </div>
             </div>
 
-            <div className='row mt-3'>
-                <div className='col-md-6'>
-                    <h3>Jwelery</h3>
-                    <PieChart
-                        series={[
-                            {
-                                data: pieData,
-                                arcLabel: (item) => `${item.value}%`,
-                                arcLabelMinAngle: 35,
-                                arcLabelRadius: '60%',
-                            },
-                        ]}
-                        sx={{
-                            [`& .${pieArcLabelClasses.root}`]: {
-                                fontWeight: 'bold',
-                                fill: '#ffffff',
-                            },
-                        }}
-                        {...size}
-                    />
-                </div>
-
-                <div className='col-md-6'>
-                    <h3>Rudrax</h3>
-                    <PieChart
-                        series={[
-                            {
-                                data: rudraxChartData,
-                                arcLabel: (item) => `${item.value}%`,
-                                arcLabelMinAngle: 35,
-                                arcLabelRadius: '60%',
-                            },
-                        ]}
-                        sx={{
-                            [`& .${pieArcLabelClasses.root}`]: {
-                                fontWeight: 'bold',
-                                fill: '#ffffff',
-                            },
-                        }}
-                        {...chartSize}
-                    />
-                </div>
-            </div>
-
-            <div className='row mt-3'>
-                <div className='col-12 col-lg-8 mb-4'>
-                    <Typography variant="h6" fontWeight="bold" mb={1}>Sales vs Purchases</Typography>
-                    <div style={{ width: '100%', overflowX: 'auto' }}>
-                        <BarChart
-                            xAxis={[{ scaleType: 'band', data: monthlySales.months.length ? monthlySales.months : monthlyPurchases.months }]}
+            <div className='row mt-1'>
+                <div className='col-12 col-md-6 mb-4'>
+                    <div className="aarmbh-card" style={{ padding: '20px', overflowX: 'auto' }}>
+                        <Typography variant="h6" mb={1}>Jewelry Sales Mix</Typography>
+                        <PieChart
                             series={[
-                                { data: monthlySales.totals, label: 'Sales', color: '#4caf50' },
-                                { data: monthlyPurchases.totals, label: 'Purchases', color: '#ff7043' },
+                                {
+                                    data: pieData,
+                                    arcLabel: (item) => `${item.value}%`,
+                                    arcLabelMinAngle: 35,
+                                    arcLabelRadius: '60%',
+                                    innerRadius: 30,
+                                },
                             ]}
-                            width={Math.max(500, monthlySales.months.length * 100)}
-                            height={320}
+                            colors={['#0d3b3d', '#b8923a', '#1a5fa8', '#a3660a', '#5a4fcf', '#c65b2e']}
+                            sx={{
+                                [`& .${pieArcLabelClasses.root}`]: {
+                                    fontWeight: 'bold',
+                                    fill: '#ffffff',
+                                },
+                            }}
+                            {...size}
                         />
                     </div>
                 </div>
 
-                <div className='col-12 col-lg-4 mb-4'>
-                    <Typography variant="h6" fontWeight="bold" mb={1}>Payment Status</Typography>
-                    {paymentStatusData.length === 0 ? (
-                        <Typography color="text.secondary">No sales data yet.</Typography>
-                    ) : (
+                <div className='col-12 col-md-6 mb-4'>
+                    <div className="aarmbh-card" style={{ padding: '20px', overflowX: 'auto' }}>
+                        <Typography variant="h6" mb={1}>Rudrax Sales Mix</Typography>
                         <PieChart
-                            series={[{ data: paymentStatusData, innerRadius: 40, arcLabel: (item) => `${item.label}` }]}
-                            sx={{ [`& .${pieArcLabelClasses.root}`]: { fontWeight: 'bold', fill: '#ffffff', fontSize: 11 } }}
-                            width={320}
-                            height={280}
+                            series={[
+                                {
+                                    data: rudraxChartData,
+                                    arcLabel: (item) => `${item.value}%`,
+                                    arcLabelMinAngle: 35,
+                                    arcLabelRadius: '60%',
+                                    innerRadius: 30,
+                                },
+                            ]}
+                            colors={['#0d3b3d', '#b8923a', '#1a5fa8', '#a3660a', '#5a4fcf', '#c65b2e']}
+                            sx={{
+                                [`& .${pieArcLabelClasses.root}`]: {
+                                    fontWeight: 'bold',
+                                    fill: '#ffffff',
+                                },
+                            }}
+                            {...chartSize}
                         />
-                    )}
+                    </div>
                 </div>
             </div>
 
-            <div className='row mt-3'>
+            <div className='row mt-1'>
+                <div className='col-12 col-lg-8 mb-4'>
+                    <div className="aarmbh-card" style={{ padding: '20px' }}>
+                        <Typography variant="h6" mb={1}>Sales vs Purchases</Typography>
+                        <div style={{ width: '100%', overflowX: 'auto' }}>
+                            <BarChart
+                                xAxis={[{ scaleType: 'band', data: monthlySales.months.length ? monthlySales.months : monthlyPurchases.months }]}
+                                series={[
+                                    { data: monthlySales.totals, label: 'Sales', color: '#0d3b3d' },
+                                    { data: monthlyPurchases.totals, label: 'Purchases', color: '#b8923a' },
+                                ]}
+                                width={Math.max(500, monthlySales.months.length * 100)}
+                                height={300}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className='col-12 col-lg-4 mb-4'>
+                    <div className="aarmbh-card" style={{ padding: '20px', height: '100%' }}>
+                        <Typography variant="h6" mb={1}>Payment Status</Typography>
+                        {paymentStatusData.length === 0 ? (
+                            <Typography color="text.secondary" variant="body2">No sales data yet.</Typography>
+                        ) : (
+                            <PieChart
+                                series={[{ data: paymentStatusData, innerRadius: 40, arcLabel: (item) => `${item.label}` }]}
+                                colors={['#1a5fa8', '#a3660a', '#9c27b0']}
+                                sx={{ [`& .${pieArcLabelClasses.root}`]: { fontWeight: 'bold', fill: '#ffffff', fontSize: 11 } }}
+                                width={280}
+                                height={260}
+                            />
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <div className='row mt-1'>
                 <div className='col-12 mb-4'>
-                    <Card className="shadow-sm" sx={{ borderRadius: 3 }}>
+                    <Card>
                         <CardContent>
-                            <Typography variant="h6" fontWeight="bold" mb={2}>Top Selling Products</Typography>
+                            <Box display="flex" alignItems="center" gap={1} mb={2}>
+                                <TrendingUp size={20} color="#b8923a" />
+                                <Typography variant="h6">Top Selling Products</Typography>
+                            </Box>
                             {topProducts.length === 0 ? (
-                                <Typography color="text.secondary">Not enough sales data yet to rank products.</Typography>
+                                <Typography color="text.secondary" variant="body2">Not enough sales data yet to rank products.</Typography>
                             ) : (
                                 topProducts.map((product, index) => (
                                     <Box
@@ -974,10 +470,10 @@ const Dashboard = () => {
                                         display="flex"
                                         justifyContent="space-between"
                                         alignItems="center"
-                                        sx={{ py: 1, borderBottom: index < topProducts.length - 1 ? '1px solid #eee' : 'none' }}
+                                        sx={{ py: 1.2, borderBottom: index < topProducts.length - 1 ? '1px solid #f0ede3' : 'none' }}
                                     >
-                                        <Typography>{index + 1}. {product.productname}</Typography>
-                                        <Typography color="text.secondary">{product.totalQty} sold &middot; ₹{product.totalRevenue}</Typography>
+                                        <Typography fontWeight={600}>{index + 1}. {product.productname}</Typography>
+                                        <Typography color="text.secondary" variant="body2">{product.totalQty} sold &middot; ₹{product.totalRevenue}</Typography>
                                     </Box>
                                 ))
                             )}

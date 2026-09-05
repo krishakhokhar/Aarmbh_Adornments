@@ -9,9 +9,11 @@ import {
   BarChart,
 } from "@mui/x-charts";
 
-import { Button, TextField, Typography } from '@mui/material';
+import { Button, TextField } from '@mui/material';
 import { Download, Printer } from 'lucide-react';
 import axios from 'axios';
+import PageHeader from '../../../components/ui/PageHeader';
+import StatCard from '../../../components/ui/StatCard';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -76,8 +78,8 @@ const Reports = () => {
   }, []);
 
   const size = {
-    width: 500,
-    height: 400,
+    width: 320,
+    height: 300,
   };
 
   // Rudrax data on pie
@@ -105,8 +107,8 @@ const Reports = () => {
   }, []);
 
   const chartSize = {
-    width: 500,
-    height: 400,
+    width: 320,
+    height: 300,
   };
 
   // bars chart
@@ -210,24 +212,24 @@ const Reports = () => {
   const summary = useMemo(() => {
     if (reportType === 'sales') {
       const total = reportRows.reduce((sum, r) => sum + (r.total || 0), 0);
-      return [{ label: 'Total Sales', value: `₹${total}` }, { label: 'Records', value: reportRows.length }];
+      return [{ label: 'Total Sales', value: total, prefix: '₹' }, { label: 'Records', value: reportRows.length }];
     }
     if (reportType === 'purchase') {
       const total = reportRows.reduce((sum, r) => sum + (r.total ?? r.productqty * r.productprice), 0);
-      return [{ label: 'Total Purchases', value: `₹${total}` }, { label: 'Records', value: reportRows.length }];
+      return [{ label: 'Total Purchases', value: total, prefix: '₹' }, { label: 'Records', value: reportRows.length }];
     }
     if (reportType === 'inventory') {
       const totalValue = reportRows.reduce((sum, r) => sum + r.buyingprice * r.itemQty, 0);
       const lowStock = reportRows.filter((r) => r.itemQty <= LOW_STOCK_THRESHOLD).length;
       return [
-        { label: 'Total Stock Value', value: `₹${totalValue}` },
+        { label: 'Total Stock Value', value: totalValue, prefix: '₹' },
         { label: 'Low Stock Items', value: lowStock },
         { label: 'Total Items', value: reportRows.length },
       ];
     }
     if (reportType === 'profit') {
       const totalProfit = reportRows.reduce((sum, r) => sum + r.profit, 0);
-      return [{ label: 'Total Profit', value: `₹${totalProfit}` }, { label: 'Records', value: reportRows.length }];
+      return [{ label: 'Total Profit', value: totalProfit, prefix: '₹' }, { label: 'Records', value: reportRows.length }];
     }
     return [];
   }, [reportType, reportRows]);
@@ -261,9 +263,9 @@ const Reports = () => {
 
   return (
     <>
-      <h1>Reports</h1>
+      <PageHeader title="Reports" subtitle="Sales, purchase, inventory and profit reporting in one place." />
 
-      <div className="no-print mb-3 mt-3">
+      <div className="no-print mb-3 aarmbh-card" style={{ padding: '16px 20px' }}>
         <div className="row g-3 align-items-end">
           <div className="col-12 col-md-3">
             <TextField
@@ -308,8 +310,8 @@ const Reports = () => {
           <div className="col-12 col-md-3 d-flex" style={{ gap: 8 }}>
             <Button
               variant="contained"
+              className="aarmbh-btn-primary"
               startIcon={<Download size={18} />}
-              style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
               onClick={handleExportCsv}
               disabled={reportRows.length === 0}
             >
@@ -329,47 +331,49 @@ const Reports = () => {
       </div>
 
       <div className="print-area">
-        <div className="d-flex flex-wrap mb-3" style={{ gap: '2rem' }}>
+        <div className="row mb-3">
           {summary.map((s) => (
-            <div key={s.label}>
-              <Typography variant="caption" color="text.secondary">{s.label}</Typography>
-              <Typography variant="h6" fontWeight="bold">{s.value}</Typography>
+            <div key={s.label} className="col-12 col-sm-6 col-md-3 mb-3">
+              <StatCard label={s.label} value={s.value} prefix={s.prefix || ''} accent="#0d3b3d" />
             </div>
           ))}
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table table-sm table-striped" style={{ minWidth: 600 }}>
-            <thead style={{ backgroundColor: '#0d3b3d' }}>
-              <tr>
-                {activeColumns.map((c) => (
-                  <th key={c.key} style={{ color: 'white' }}>{c.label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {reportLoading && (
-                <tr><td colSpan={activeColumns.length} className="text-center py-3">Loading report data...</td></tr>
-              )}
-              {!reportLoading && reportRows.length === 0 && (
-                <tr><td colSpan={activeColumns.length} className="text-center py-3 text-muted">No records found for this selection.</td></tr>
-              )}
-              {!reportLoading && reportRows.map((row, idx) => (
-                <tr key={row._id || idx}>
+        <div className="aarmbh-card" style={{ overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="table table-sm aarmbh-table mb-0" style={{ minWidth: 600 }}>
+              <thead>
+                <tr>
                   {activeColumns.map((c) => (
-                    <td key={c.key}>{c.format ? c.format(row[c.key]) : row[c.key]}</td>
+                    <th key={c.key}>{c.label}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {reportLoading && (
+                  <tr><td colSpan={activeColumns.length} className="text-center py-4">Loading report data...</td></tr>
+                )}
+                {!reportLoading && reportRows.length === 0 && (
+                  <tr><td colSpan={activeColumns.length} className="text-center py-4 text-muted">No records found for this selection.</td></tr>
+                )}
+                {!reportLoading && reportRows.map((row, idx) => (
+                  <tr key={row._id || idx}>
+                    {activeColumns.map((c) => (
+                      <td key={c.key}>{c.format ? c.format(row[c.key]) : row[c.key]}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       <div className='mt-4 no-print'>
         <div className="row">
-          <div className="col-md-6 shadow-sm">
-            <h4 className="p-4">Jewelry Data</h4>
+          <div className="col-12 col-md-6 mb-4">
+            <div className="aarmbh-card" style={{ padding: '16px', overflowX: 'auto' }}>
+            <h4 className="p-2">Jewelry Data</h4>
             <PieChart
               series={[
                 {
@@ -387,9 +391,11 @@ const Reports = () => {
               }}
               {...size}
             />
+            </div>
           </div>
-          <div className="col-md-6 shadow-sm">
-            <h4 className="p-4">Rudrax Data</h4>
+          <div className="col-12 col-md-6 mb-4">
+            <div className="aarmbh-card" style={{ padding: '16px', overflowX: 'auto' }}>
+            <h4 className="p-2">Rudrax Data</h4>
             <PieChart
               series={[
                 {
@@ -407,33 +413,38 @@ const Reports = () => {
               }}
               {...chartSize}
             />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className='Row mt-4 no-print'>
-        <div className='col-md-12 shadow-sm mt-3 p-4'>
+      <div className='row mt-1 no-print'>
+        <div className='col-md-12 mb-4'>
+          <div className="aarmbh-card" style={{ padding: '20px' }}>
           <h4>Product Qty</h4>
           <div style={{ width: "100%", overflowX: "auto" }}>
             <BarChart
               xAxis={[{ id: "items", data: itemNames, scaleType: "band", label: "Item Name" }]}
-              series={[{ data: quantities, label: "Total Quantity" }]}
+              series={[{ data: quantities, label: "Total Quantity", color: '#0d3b3d' }]}
               width={Math.max(800, itemNames.length * 100)} // Dynamic width for scroll
-              height={500}
+              height={400}
             />
+          </div>
           </div>
         </div>
       </div>
 
-      <div className='Row no-print'>
-        <div className='col-md-12 shadow-sm mt-3 p-4'>
+      <div className='row no-print'>
+        <div className='col-md-12 mb-4'>
+          <div className="aarmbh-card" style={{ padding: '20px' }}>
           <h4>Monthly Sales Data</h4>
           <BarChart
             xAxis={[{ scaleType: 'band', data: months }]}
-            series={[{ data: sales, label: 'Monthly Sales', color: '#82e0aa' }]}
+            series={[{ data: sales, label: 'Monthly Sales', color: '#b8923a' }]}
             width={Math.max(500, months.length * 100)}
             height={300}
           />
+          </div>
         </div>
       </div>
     </>

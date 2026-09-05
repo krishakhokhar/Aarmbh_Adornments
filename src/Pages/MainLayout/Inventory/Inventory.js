@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Button, TextField, InputAdornment, Tabs, Tab, Box } from '@mui/material';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, PackageSearch } from 'lucide-react';
 import Backdrop from '@mui/material/Backdrop';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
@@ -17,6 +17,9 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import API from '../../../Server';
 import Loader from '../../Loader/Loader';
+import PageHeader from '../../../components/ui/PageHeader';
+import StatusBadge from '../../../components/ui/StatusBadge';
+import EmptyState from '../../../components/ui/EmptyState';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -24,6 +27,12 @@ const getStockStatus = (item) => {
     if (item.itemQty === 0) return 'Out Of Stock';
     if (item.itemQty <= LOW_STOCK_THRESHOLD) return 'Low Stock';
     return 'In Stock';
+};
+
+const STOCK_STATUS_TONE = {
+    'In Stock': 'success',
+    'Low Stock': 'warning',
+    'Out Of Stock': 'danger',
 };
 
 const Inventory = () => {
@@ -352,17 +361,20 @@ const Inventory = () => {
                 )
             }
             <div className="container-fluid mt-2">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h1>Inventory</h1>
-                    <Button
-                        variant="contained"
-                        startIcon={<Plus size={20} />}
-                        style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
-                        onClick={handleOpen}
-                    >
-                        Add Items
-                    </Button>
-                </div>
+                <PageHeader
+                    title="Inventory"
+                    subtitle="Track stock levels, pricing and profit across every item."
+                    action={(
+                        <Button
+                            variant="contained"
+                            className="aarmbh-btn-primary"
+                            startIcon={<Plus size={20} />}
+                            onClick={handleOpen}
+                        >
+                            Add New Inventory Item
+                        </Button>
+                    )}
+                />
 
                 {/* Search Bar */}
                 <div style={{ maxWidth: '350px', width: '100%' }}>
@@ -439,21 +451,14 @@ const Inventory = () => {
             >
                 <Fade in={open}>
                     <Box
+                        className="aarmbh-modal-card"
                         sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
                             width: { xs: '90%', sm: '80%', md: 600 },
-                            bgcolor: 'background.paper',
-                            borderRadius: 3,
-                            boxShadow: 24,
                             p: { xs: 2, md: 4 },
-                            outline: 'none',
                         }}
                     >
                         <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
-                            Add New Inventory Item
+                            {isEditMode ? 'Edit Inventory Item' : 'Add New Inventory Item'}
                         </Typography>
 
                         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -541,23 +546,15 @@ const Inventory = () => {
                                         </TextField>
                                     </div>
                                     <div className="col-12">
-                                        {/* <Button
-                                            variant="contained"
-                                            fullWidth
-                                            type="submit"
-                                            style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
-                                        >
-                                            Save Item
-                                        </Button> */}
                                         <Button
                                             variant="contained"
+                                            className="aarmbh-btn-primary"
                                             fullWidth
                                             type="submit"
-                                            style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
+                                            size="large"
                                         >
                                             {isEditMode ? 'Update Item' : 'Save Item'}
                                         </Button>
-
                                     </div>
                                 </div>
                             </div>
@@ -568,11 +565,11 @@ const Inventory = () => {
 
             {/* Table Section */}
             <div className="mt-3">
-                <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                <Paper className="aarmbh-card" sx={{ width: '100%', overflow: 'hidden' }}>
                     {/* Make the table container scrollable on small screens */}
                     <Box sx={{ maxWidth: '100%', overflowX: 'auto' }}>
-                        <TableContainer sx={{ maxHeight: 440 }}>
-                            <Table stickyHeader aria-label="sticky table">
+                        <TableContainer sx={{ maxHeight: 480 }}>
+                            <Table stickyHeader aria-label="sticky table" className="aarmbh-table">
                                 <TableHead>
                                     <TableRow>
                                         {columns.map((column) => (
@@ -582,10 +579,6 @@ const Inventory = () => {
                                                 onClick={column.sortable ? () => handleSort(column.id) : undefined}
                                                 sx={{
                                                     minWidth: column.minWidth,
-                                                    fontWeight: 'bold',
-                                                    color: 'white',
-                                                    bgcolor: '#0d3b3d',
-                                                    borderBottom: '1px solid #ccc',
                                                     cursor: column.sortable ? 'pointer' : 'default',
                                                     userSelect: 'none',
                                                 }}
@@ -607,29 +600,24 @@ const Inventory = () => {
 
                                     {!initialLoading && sortedItems.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={columns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                                                {items.length === 0 ? 'No items in inventory yet. Click "Add Items" to get started.' : 'No items match your search/filter.'}
+                                            <TableCell colSpan={columns.length}>
+                                                <EmptyState
+                                                    icon={PackageSearch}
+                                                    title={items.length === 0 ? 'No inventory items yet.' : 'No items match your search/filter.'}
+                                                    subtitle={items.length === 0 ? 'Add your first product to start tracking stock and profit.' : 'Try a different search term or category.'}
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     )}
 
                                     {!initialLoading && sortedItems
                                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                        .map((item, index) => {
+                                        .map((item) => {
                                             const stockStatus = getStockStatus(item);
                                             const stockValue = item.buyingprice * item.itemQty;
                                             const profit = item.sellingprice - item.buyingprice;
                                             return (
-                                                <TableRow
-                                                    hover
-                                                    role="checkbox"
-                                                    tabIndex={-1}
-                                                    key={item._id}
-                                                    sx={{
-                                                        backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white',
-                                                        '&:hover': { backgroundColor: '#e0f7fa' },
-                                                    }}
-                                                >
+                                                <TableRow hover role="checkbox" tabIndex={-1} key={item._id}>
                                                     <TableCell>{item.sku || '-'}</TableCell>
                                                     <TableCell>{item.itemname}</TableCell>
                                                     <TableCell>{item.itemcategory}</TableCell>
@@ -640,38 +628,19 @@ const Inventory = () => {
                                                     <TableCell align="right">₹{profit}</TableCell>
 
                                                     <TableCell align="right">
-                                                        <span
-                                                            style={{
-                                                                backgroundColor:
-                                                                    stockStatus === 'Out Of Stock'
-                                                                        ? '#f44336'
-                                                                        : stockStatus === 'Low Stock'
-                                                                            ? '#ff9800'
-                                                                            : '#4caf50',
-                                                                color: 'white',
-                                                                padding: '4px 12px',
-                                                                borderRadius: '12px',
-                                                                fontWeight: 'bold',
-                                                                minWidth: '90px',
-                                                                textAlign: 'center',
-                                                                display: 'inline-block',
-                                                            }}
-                                                        >
-                                                            {stockStatus}
-                                                        </span>
+                                                        <StatusBadge label={stockStatus} tone={STOCK_STATUS_TONE[stockStatus]} />
                                                     </TableCell>
 
                                                     <TableCell align="center">
                                                         <Button
-                                                            variant="contained"
-                                                            color="primary"
+                                                            variant="outlined"
                                                             size="small"
                                                             startIcon={<Pencil size={16} />}
                                                             sx={{ mr: 1 }}
                                                             onClick={() => handleEdit(item)}
                                                         />
                                                         <Button
-                                                            variant="contained"
+                                                            variant="outlined"
                                                             color="error"
                                                             size="small"
                                                             startIcon={<Trash2 size={16} />}

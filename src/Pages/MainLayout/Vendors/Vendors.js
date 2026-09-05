@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, TextField, InputAdornment, Box, Modal, Fade, Typography } from '@mui/material';
-import { Plus, Pencil, Trash2, Search, History } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, History, Users, IndianRupee } from 'lucide-react';
 import Backdrop from '@mui/material/Backdrop';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -14,6 +14,13 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import Loader from '../../Loader/Loader';
 import API from '../../../Server';
+import PageHeader from '../../../components/ui/PageHeader';
+import StatCard from '../../../components/ui/StatCard';
+import StatusBadge from '../../../components/ui/StatusBadge';
+import EmptyState from '../../../components/ui/EmptyState';
+
+const PAYMENT_STATUS_TONE = { Cash: 'success', Online: 'info', Pending: 'warning' };
+const VENDOR_STATUS_TONE = { Active: 'success', Inactive: 'neutral' };
 
 const Vendors = () => {
     const [open, setOpen] = useState(false);
@@ -197,16 +204,37 @@ const Vendors = () => {
             {loading && <Loader />}
 
             <div className="container-fluid mt-2">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h1>Vendors</h1>
-                    <Button
-                        variant="contained"
-                        startIcon={<Plus size={20} />}
-                        style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
-                        onClick={handleOpen}
-                    >
-                        Add Vendors
-                    </Button>
+                <PageHeader
+                    title="Vendors"
+                    subtitle="Manage supplier relationships and payments."
+                    action={(
+                        <Button
+                            variant="contained"
+                            className="aarmbh-btn-primary"
+                            startIcon={<Plus size={20} />}
+                            onClick={handleOpen}
+                        >
+                            Add Vendor
+                        </Button>
+                    )}
+                />
+
+                <div className="row mb-3">
+                    <div className="col-12 col-sm-6 col-md-4 mb-3 mb-md-0">
+                        <StatCard icon={Users} label="Vendor Entries" value={vendors.length} accent="#0d3b3d" helperText="total records" />
+                    </div>
+                    <div className="col-12 col-sm-6 col-md-4 mb-3 mb-md-0">
+                        <StatCard icon={Users} label="Active Vendors" value={vendors.filter((v) => v.status === 'Active').length} accent="#0d8a7a" />
+                    </div>
+                    <div className="col-12 col-sm-6 col-md-4">
+                        <StatCard
+                            icon={IndianRupee}
+                            label="Total Order Value"
+                            value={vendors.reduce((sum, v) => sum + (v.ordertotal || 0), 0)}
+                            prefix="₹"
+                            accent="#b8923a"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -240,17 +268,10 @@ const Vendors = () => {
             >
                 <Fade in={open}>
                     <Box
+                        className="aarmbh-modal-card"
                         sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
                             width: { xs: '90%', sm: '80%', md: 600 },
-                            bgcolor: 'background.paper',
-                            borderRadius: 3,
-                            boxShadow: 24,
                             p: { xs: 2, md: 4 },
-                            outline: 'none',
                         }}
                     >
                         <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
@@ -321,17 +342,12 @@ const Vendors = () => {
                                     <div className="col-12">
                                         <Button
                                             variant="contained"
+                                            className="aarmbh-btn-primary"
                                             fullWidth
                                             type="submit"
-                                            style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
+                                            size="large"
                                         >
-                                            <Typography variant="contained"
-                                                fullWidth
-                                                type="submit"
-                                                style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}>
-                                                {editMode ? 'Edit Vendor' : 'Add New Vendor'}
-                                            </Typography>
-
+                                            {editMode ? 'Update Vendor' : 'Add Vendor'}
                                         </Button>
                                     </div>
                                 </div>
@@ -343,23 +359,14 @@ const Vendors = () => {
 
             {/* Table */}
             <div className='mt-3'>
-                <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                <Paper className="aarmbh-card" sx={{ width: '100%', overflow: 'hidden' }}>
                     <Box sx={{ overflowX: 'auto' }}>
-                        <TableContainer sx={{ maxHeight: 440 }}>
-                            <Table stickyHeader>
+                        <TableContainer sx={{ maxHeight: 480 }}>
+                            <Table stickyHeader className="aarmbh-table">
                                 <TableHead>
                                     <TableRow>
                                         {columns.map((column) => (
-                                            <TableCell
-                                                key={column.id}
-                                                align={column.align || 'left'}
-                                                sx={{
-                                                    fontWeight: 'bold',
-                                                    color: 'white',
-                                                    bgcolor: '#0d3b3d',
-                                                    borderBottom: '1px solid #ccc',
-                                                }}
-                                            >
+                                            <TableCell key={column.id} align={column.align || 'left'}>
                                                 {column.label}
                                             </TableCell>
                                         ))}
@@ -368,8 +375,12 @@ const Vendors = () => {
                                 <TableBody>
                                     {filterVendors().length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={columns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                                                {vendors.length === 0 ? 'No vendors added yet. Click "Add Vendors" to get started.' : 'No vendors match your search.'}
+                                            <TableCell colSpan={columns.length}>
+                                                <EmptyState
+                                                    icon={Users}
+                                                    title={vendors.length === 0 ? 'No vendors added yet.' : 'No vendors match your search.'}
+                                                    subtitle={vendors.length === 0 ? 'Add your first vendor to start tracking supplier orders.' : 'Try a different name.'}
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -385,39 +396,10 @@ const Vendors = () => {
                                                 <TableCell>{new Date(vendor.orderdate).toLocaleDateString()}</TableCell>
                                                 <TableCell align="right">₹{vendor.ordertotal}</TableCell>
                                                 <TableCell align="center">
-                                                    <span
-                                                        style={{
-                                                            backgroundColor:
-                                                                vendor.paymentstatus === 'Cash' ? '#4caf50'
-                                                                    : vendor.paymentstatus === 'Online' ? '#2196f3'
-                                                                        : '#ff9800',
-                                                            color: 'white',
-                                                            padding: '4px 12px',
-                                                            borderRadius: '12px',
-                                                            fontWeight: 'bold',
-                                                            minWidth: '90px',
-                                                            display: 'inline-block',
-                                                        }}
-                                                    >
-                                                        {vendor.paymentstatus}
-                                                    </span>
+                                                    <StatusBadge label={vendor.paymentstatus} tone={PAYMENT_STATUS_TONE[vendor.paymentstatus]} />
                                                 </TableCell>
                                                 <TableCell align="center">
-                                                    <span
-                                                        style={{
-                                                            backgroundColor:
-                                                                vendor.status === 'Active' ? '#00bfa5' : '#9e9e9e',
-                                                            color: 'white',
-                                                            padding: '4px 12px',
-                                                            borderRadius: '12px',
-                                                            fontWeight: 'bold',
-                                                            minWidth: '90px',
-                                                            textAlign: 'center',
-                                                            display: 'inline-block',
-                                                        }}
-                                                    >
-                                                        {vendor.status}
-                                                    </span>
+                                                    <StatusBadge label={vendor.status} tone={VENDOR_STATUS_TONE[vendor.status]} />
                                                 </TableCell>
                                                 <TableCell align="center">
                                                     <Button
@@ -472,19 +454,12 @@ const Vendors = () => {
             <Modal open={summaryOpen} onClose={() => setSummaryOpen(false)} closeAfterTransition slots={{ backdrop: Backdrop }} slotProps={{ backdrop: { timeout: 500 } }}>
                 <Fade in={summaryOpen}>
                     <Box
+                        className="aarmbh-modal-card"
                         sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
                             width: { xs: '90%', sm: '80%', md: 650 },
                             maxHeight: '85vh',
                             overflowY: 'auto',
-                            bgcolor: 'background.paper',
-                            borderRadius: 3,
-                            boxShadow: 24,
                             p: { xs: 2, md: 4 },
-                            outline: 'none',
                         }}
                     >
                         {summaryLoading && <Typography textAlign="center">Loading purchase history...</Typography>}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './Sales.css'
 import { Button, TextField, InputAdornment, Box } from '@mui/material';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ShoppingBag, IndianRupee } from 'lucide-react';
 import Backdrop from '@mui/material/Backdrop';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
@@ -18,6 +18,12 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import API from '../../../Server';
 import Loader from '../../Loader/Loader';
+import PageHeader from '../../../components/ui/PageHeader';
+import StatCard from '../../../components/ui/StatCard';
+import StatusBadge from '../../../components/ui/StatusBadge';
+import EmptyState from '../../../components/ui/EmptyState';
+
+const PAYMENT_STATUS_TONE = { Cash: 'success', Online: 'info', Pending: 'warning' };
 
 const Sales = () => {
     const [open, setOpen] = React.useState(false);
@@ -269,16 +275,35 @@ const Sales = () => {
                 )
             }
             <div className="container-fluid mt-2">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h1>Sales</h1>
-                    <Button
-                        variant="contained"
-                        startIcon={<Plus size={20} />}
-                        style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
-                        onClick={handleOpen}
-                    >
-                        New Sales
-                    </Button>
+                <PageHeader
+                    title="Sales"
+                    subtitle="Track every sale and its payment status."
+                    action={(
+                        <Button
+                            variant="contained"
+                            className="aarmbh-btn-primary"
+                            startIcon={<Plus size={20} />}
+                            onClick={handleOpen}
+                        >
+                            New Sale
+                        </Button>
+                    )}
+                />
+
+                <div className="row mb-3">
+                    <div className="col-12 col-sm-6 col-md-4 mb-3 mb-md-0">
+                        <StatCard icon={ShoppingBag} label="Total Sales" value={salesData.length} accent="#0d3b3d" helperText="records" />
+                    </div>
+                    <div className="col-12 col-sm-6 col-md-4">
+                        <StatCard
+                            icon={IndianRupee}
+                            label="Total Revenue"
+                            value={salesData.reduce((sum, s) => sum + (s.total || 0), 0)}
+                            prefix="₹"
+                            accent="#b8923a"
+                            helperText="all time"
+                        />
+                    </div>
                 </div>
 
                 {/* Search Bar */}
@@ -319,21 +344,14 @@ const Sales = () => {
                 >
                     <Fade in={open}>
                         <Box
+                            className="aarmbh-modal-card"
                             sx={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
                                 width: { xs: '90%', sm: '80%', md: 600 },
-                                bgcolor: 'background.paper',
-                                borderRadius: 3,
-                                boxShadow: 24,
                                 p: { xs: 2, md: 4 },
-                                outline: 'none',
                             }}
                         >
                             <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
-                                Add New Sale
+                                {isEditing ? 'Edit Sale' : 'Add New Sale'}
                             </Typography>
 
                             <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -473,11 +491,12 @@ const Sales = () => {
                                         <div className="col-12">
                                             <Button
                                                 variant="contained"
+                                                className="aarmbh-btn-primary"
                                                 fullWidth
                                                 type="submit"
-                                                style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
+                                                size="large"
                                             >
-                                                Save Sale
+                                                {isEditing ? 'Update Sale' : 'Save Sale'}
                                             </Button>
                                         </div>
                                     </div>
@@ -492,24 +511,14 @@ const Sales = () => {
 
             {/* Table */}
             <div className="mt-3">
-                <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                <Paper className="aarmbh-card" sx={{ width: '100%', overflow: 'hidden' }}>
                     <Box sx={{ maxWidth: '100%', overflowX: 'auto' }}>
-                        <TableContainer sx={{ maxHeight: 440 }}>
-                            <Table stickyHeader aria-label="sticky table">
+                        <TableContainer sx={{ maxHeight: 480 }}>
+                            <Table stickyHeader aria-label="sticky table" className="aarmbh-table">
                                 <TableHead>
                                     <TableRow>
                                         {columns.map((column) => (
-                                            <TableCell
-                                                key={column.id}
-                                                align={column.align || 'left'}
-                                                sx={{
-                                                    minWidth: column.minWidth,
-                                                    fontWeight: 'bold',
-                                                    color: 'white',
-                                                    bgcolor: '#0d3b3d',
-                                                    borderBottom: '1px solid #ccc',
-                                                }}
-                                            >
+                                            <TableCell key={column.id} align={column.align || 'left'} sx={{ minWidth: column.minWidth }}>
                                                 {column.label}
                                             </TableCell>
                                         ))}
@@ -518,24 +527,19 @@ const Sales = () => {
                                 <TableBody>
                                     {filterSalesData().length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={columns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                                                {salesData.length === 0 ? 'No sales recorded yet. Click "New Sales" to add one.' : 'No sales match your search.'}
+                                            <TableCell colSpan={columns.length}>
+                                                <EmptyState
+                                                    icon={ShoppingBag}
+                                                    title={salesData.length === 0 ? 'Your sales will appear here.' : 'No sales match your search.'}
+                                                    subtitle={salesData.length === 0 ? 'Record your first sale to start tracking revenue.' : 'Try a different customer or product name.'}
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     )}
                                     {filterSalesData()  // Use filtered sales data here
                                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                        .map((sale, index) => (
-                                            <TableRow
-                                                hover
-                                                role="checkbox"
-                                                tabIndex={-1}
-                                                key={sale._id}
-                                                sx={{
-                                                    backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white',
-                                                    '&:hover': { backgroundColor: '#e0f7fa' },
-                                                }}
-                                            >
+                                        .map((sale) => (
+                                            <TableRow hover role="checkbox" tabIndex={-1} key={sale._id}>
                                                 <TableCell>{sale.productname}</TableCell>
                                                 <TableCell>{new Date(sale.date).toLocaleDateString()}</TableCell>
                                                 <TableCell>{sale.customername}</TableCell>
@@ -544,31 +548,12 @@ const Sales = () => {
                                                 <TableCell align="right">₹{sale.productprice}</TableCell>
                                                 <TableCell align="right">₹{sale.total}</TableCell>
                                                 <TableCell align="center">
-                                                    <span
-                                                        style={{
-                                                            backgroundColor:
-                                                                sale.paymentstatus === 'Cash'
-                                                                    ? '#4caf50'
-                                                                    : sale.paymentstatus === 'Online'
-                                                                        ? '#2196f3'
-                                                                        : '#ff9800',
-                                                            color: 'white',
-                                                            padding: '4px 12px',
-                                                            borderRadius: '12px',
-                                                            fontWeight: 'bold',
-                                                            minWidth: '90px',
-                                                            textAlign: 'center',
-                                                            display: 'inline-block',
-                                                        }}
-                                                    >
-                                                        {sale.paymentstatus}
-                                                    </span>
+                                                    <StatusBadge label={sale.paymentstatus} tone={PAYMENT_STATUS_TONE[sale.paymentstatus]} />
                                                 </TableCell>
                                                 <TableCell align="center">
                                                     <Button
                                                         size="small"
                                                         variant="outlined"
-                                                        color="primary"
                                                         onClick={() => handleEdit(sale._id)}
                                                         style={{ marginRight: 8 }}
                                                     >

@@ -14,3 +14,164 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* ==========================================================================
+   Aarmbh Adornments — Admin Portal design system
+   (Login page has its own separate styling in Login.css and is untouched)
+   ========================================================================== */
+:root {
+  --aarmbh-emerald-900: #082726;
+  --aarmbh-emerald-800: #0d3b3d;
+  --aarmbh-emerald-700: #12494b;
+  --aarmbh-gold: #b8923a;
+  --aarmbh-gold-light: #d9b45c;
+  --aarmbh-ivory: #faf8f4;
+  --aarmbh-charcoal: #262a28;
+  --aarmbh-muted: #767c78;
+  --aarmbh-border: #e7e2d6;
+  --aarmbh-radius-lg: 18px;
+  --aarmbh-radius-md: 12px;
+  --aarmbh-shadow-sm: 0 2px 10px rgba(13, 59, 61, 0.06);
+  --aarmbh-shadow-md: 0 10px 30px rgba(13, 59, 61, 0.12);
+}
+
+.aarmbh-page-header {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.aarmbh-page-header h1 {
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--aarmbh-charcoal);
+  letter-spacing: -0.3px;
+  margin: 0 0 2px;
+}
+.aarmbh-page-header p {
+  color: var(--aarmbh-muted);
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.aarmbh-card {
+  background: #fff;
+  border: 1px solid var(--aarmbh-border);
+  border-radius: var(--aarmbh-radius-lg);
+  box-shadow: var(--aarmbh-shadow-sm);
+}
+
+.aarmbh-stat-card {
+  background: #fff;
+  border: 1px solid var(--aarmbh-border);
+  border-radius: var(--aarmbh-radius-lg);
+  box-shadow: var(--aarmbh-shadow-sm);
+  padding: 20px;
+  height: 100%;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.aarmbh-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--aarmbh-shadow-md);
+}
+.aarmbh-stat-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.aarmbh-stat-card__label {
+  color: var(--aarmbh-muted) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.4px;
+}
+.aarmbh-stat-card__value {
+  color: var(--aarmbh-charcoal) !important;
+  font-weight: 700 !important;
+  margin: 4px 0 6px !important;
+}
+.aarmbh-trend {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600 !important;
+}
+.aarmbh-trend.up { color: #1e7d3a !important; }
+.aarmbh-trend.down { color: #b3261e !important; }
+
+.aarmbh-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.aarmbh-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  padding: 48px 20px;
+  color: var(--aarmbh-muted);
+}
+.aarmbh-empty-state svg { color: #cfd6d0; margin-bottom: 8px; }
+
+.aarmbh-table thead th {
+  background: var(--aarmbh-emerald-800) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  border-bottom: none !important;
+  white-space: nowrap;
+}
+.aarmbh-table tbody tr { transition: background 0.15s ease; }
+.aarmbh-table tbody tr:hover { background: #f7f5ee !important; }
+
+.aarmbh-btn-primary {
+  background: var(--aarmbh-emerald-800) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.aarmbh-btn-primary:hover {
+  background: var(--aarmbh-emerald-700) !important;
+  box-shadow: 0 6px 16px rgba(13, 59, 61, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+.aarmbh-modal-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: var(--aarmbh-radius-lg);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+  outline: none;
+}
+
+.aarmbh-skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.35) 37%, rgba(255,255,255,0.15) 63%);
+  background-size: 400% 100%;
+  animation: aarmbh-shimmer 1.4s ease infinite;
+}
+@keyframes aarmbh-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

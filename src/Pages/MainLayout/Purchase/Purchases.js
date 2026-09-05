@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Button, TextField, InputAdornment, Box } from '@mui/material';
-import { Plus, Trash2, Search } from 'lucide-react';
+import { Plus, Trash2, Search, ShoppingCart, ScrollText } from 'lucide-react';
 import Backdrop from '@mui/material/Backdrop';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
@@ -17,6 +17,12 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import API from '../../../Server';
 import Loader from '../../Loader/Loader';
+import PageHeader from '../../../components/ui/PageHeader';
+import StatCard from '../../../components/ui/StatCard';
+import StatusBadge from '../../../components/ui/StatusBadge';
+import EmptyState from '../../../components/ui/EmptyState';
+
+const PAYMENT_MODE_TONE = { Cash: 'success', Online: 'info', Pending: 'warning' };
 
 const Purchases = () => {
 
@@ -197,16 +203,35 @@ const Purchases = () => {
             }
 
             <div className="container-fluid mt-2">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h1>My Purchase</h1>
-                    <Button
-                        variant="contained"
-                        startIcon={<Plus size={20} />}
-                        style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
-                        onClick={handleOpen}
-                    >
-                        New Purchases
-                    </Button>
+                <PageHeader
+                    title="Purchases"
+                    subtitle="Track restocking activity and supplier spend."
+                    action={(
+                        <Button
+                            variant="contained"
+                            className="aarmbh-btn-primary"
+                            startIcon={<Plus size={20} />}
+                            onClick={handleOpen}
+                        >
+                            New Purchase
+                        </Button>
+                    )}
+                />
+
+                <div className="row mb-3">
+                    <div className="col-12 col-sm-6 col-md-4 mb-3 mb-md-0">
+                        <StatCard icon={ShoppingCart} label="Total Purchases" value={purchases.length} accent="#0d3b3d" helperText="records" />
+                    </div>
+                    <div className="col-12 col-sm-6 col-md-4">
+                        <StatCard
+                            icon={ScrollText}
+                            label="Total Spend"
+                            value={purchases.reduce((sum, p) => sum + (p.total ?? p.productqty * p.productprice), 0)}
+                            prefix="₹"
+                            accent="#b8923a"
+                            helperText="all time"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -238,17 +263,10 @@ const Purchases = () => {
             >
                 <Fade in={open}>
                     <Box
+                        className="aarmbh-modal-card"
                         sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
                             width: { xs: '90%', sm: '80%', md: 600 },
-                            bgcolor: 'background.paper',
-                            borderRadius: 3,
-                            boxShadow: 24,
                             p: { xs: 2, md: 4 },
-                            outline: 'none',
                         }}
                     >
                         <Typography variant="h5" mb={3} fontWeight="bold" textAlign="center">
@@ -336,9 +354,10 @@ const Purchases = () => {
                                     <div className="col-12">
                                         <Button
                                             variant="contained"
+                                            className="aarmbh-btn-primary"
                                             fullWidth
                                             type="submit"
-                                            style={{ backgroundColor: '#0d3b3d', textTransform: 'none' }}
+                                            size="large"
                                         >
                                             Save Purchase
                                         </Button>
@@ -351,23 +370,14 @@ const Purchases = () => {
             </Modal>
 
             <div className='mt-3'>
-                <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                <Paper className="aarmbh-card" sx={{ width: '100%', overflow: 'hidden' }}>
                     <Box sx={{ overflowX: 'auto' }}>
-                        <TableContainer sx={{ maxHeight: 440 }}>
-                            <Table stickyHeader>
+                        <TableContainer sx={{ maxHeight: 480 }}>
+                            <Table stickyHeader className="aarmbh-table">
                                 <TableHead>
                                     <TableRow>
                                         {purchaseColumns.map((column) => (
-                                            <TableCell
-                                                key={column.id}
-                                                align={column.align || 'left'}
-                                                sx={{
-                                                    fontWeight: 'bold',
-                                                    color: 'white',
-                                                    bgcolor: '#0d3b3d',
-                                                    borderBottom: '1px solid #ccc',
-                                                }}
-                                            >
+                                            <TableCell key={column.id} align={column.align || 'left'}>
                                                 {column.label}
                                             </TableCell>
                                         ))}
@@ -376,8 +386,12 @@ const Purchases = () => {
                                 <TableBody>
                                     {filteredPurchases.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={purchaseColumns.length} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                                                {purchases.length === 0 ? 'No purchases recorded yet. Click "New Purchases" to add one.' : 'No purchases match your search.'}
+                                            <TableCell colSpan={purchaseColumns.length}>
+                                                <EmptyState
+                                                    icon={ShoppingCart}
+                                                    title={purchases.length === 0 ? 'No purchases found.' : 'No purchases match your search.'}
+                                                    subtitle={purchases.length === 0 ? 'New purchases will appear here and automatically update your stock.' : 'Try a different product name.'}
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -391,34 +405,9 @@ const Purchases = () => {
                                                 <TableCell align="right">₹{purchase.productprice}</TableCell>
                                                 <TableCell align="right">₹{purchase.total ?? purchase.productqty * purchase.productprice}</TableCell>
                                                 <TableCell align="center">
-                                                    <span
-                                                        style={{
-                                                            backgroundColor:
-                                                                purchase.paymentmod === 'Cash'
-                                                                    ? '#4caf50'
-                                                                    : purchase.paymentmod === 'Online'
-                                                                        ? '#2196f3'
-                                                                        : '#ff9800',
-                                                            color: 'white',
-                                                            padding: '4px 12px',
-                                                            borderRadius: '12px',
-                                                            fontWeight: 'bold',
-                                                            minWidth: '90px',
-                                                            display: 'inline-block',
-                                                        }}
-                                                    >
-                                                        {purchase.paymentmod}
-                                                    </span>
+                                                    <StatusBadge label={purchase.paymentmod} tone={PAYMENT_MODE_TONE[purchase.paymentmod]} />
                                                 </TableCell>
                                                 <TableCell align="center">
-                                                    {/* <Button
-                                                        size="small"
-                                                        variant="outlined"
-                                                        onClick={() => handleEdit(purchase._id)}
-                                                        style={{ marginRight: 8 }}
-                                                    >
-                                                        <Pencil size={16} />
-                                                    </Button> */}
                                                     <Button
                                                         size="small"
                                                         variant="outlined"
